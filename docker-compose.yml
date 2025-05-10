@@ -3,24 +3,24 @@ version: '3.1'
 services:
 
   db:
-    image: mysql
-    command: --default-authentication-plugin=mysql_native_password
+    image: postgres:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: gofiber_clean_architecture
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Doranobi123
+      POSTGRES_DB: fp-imk
     ports:
-      - "3306:3306"
+      - "5432:5432"
 
   dbtest:
-    image: mysql
-    command: --default-authentication-plugin=mysql_native_password
+    image: postgres:latest
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: gofiber_clean_architecture_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Doranobi123
+      POSTGRES_DB: fp-imk-test
     ports:
-      - "3307:3306"
+      - "5433:5432"
 
   adminer:
     image: adminer
