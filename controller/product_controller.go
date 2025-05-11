@@ -7,6 +7,10 @@ import (
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/gofiber/fiber/v2"
+	"fmt"
+	"strconv"
+	"github.com/google/uuid"
+
 )
 
 type ProductController struct {
@@ -19,7 +23,7 @@ func NewProductController(productService *service.ProductService, config configu
 }
 
 func (controller ProductController) Route(app *fiber.App) {
-	app.Post("/v1/api/product", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.Create)
+	app.Post("/v1/api/product", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
 	app.Put("/v1/api/product/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.Update)
 	app.Delete("/v1/api/product/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.Delete)
 	app.Get("/v1/api/product/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.FindById)
@@ -37,17 +41,73 @@ func (controller ProductController) Route(app *fiber.App) {
 // @Security JWT
 // @Router /v1/api/product [post]
 func (controller ProductController) Create(c *fiber.Ctx) error {
-	var request model.ProductCreateOrUpdateModel
-	err := c.BodyParser(&request)
-	exception.PanicLogging(err)
+	// Parse multipart form fields manually
+	name := c.FormValue("name")
+	priceStr := c.FormValue("price")
+	quantityStr := c.FormValue("quantity")
 
-	response := controller.ProductService.Create(c.Context(), request)
+	fmt.Println("DEBUG FORM:", name, priceStr, quantityStr)
+
+
+	if name == "" || priceStr == "" || quantityStr == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: "Missing required fields",
+			Data: []map[string]string{
+				{"field": "Name", "message": "this field is required"},
+				{"field": "Price", "message": "this field is required"},
+				{"field": "Quantity", "message": "this field is required"},
+			},
+		})
+	}
+
+	// Convert price and quantity
+	price, err := strconv.ParseInt(priceStr, 10, 64)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid price format")
+	}
+
+	quantity, err := strconv.ParseInt(quantityStr, 10, 32)
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Invalid quantity format")
+	}
+
+	// Get file
+	file, err := c.FormFile("image")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Image is required")
+	}
+
+
+	// Save image to local folder
+	imageID := uuid.New().String()
+	imageName := fmt.Sprintf("%s.png", imageID)
+
+
+
+	imagePath := fmt.Sprintf("./media/products/%s", imageName)
+	if err := c.SaveFile(file, imagePath); err != nil {
+		return fiber.NewError(fiber.StatusInternalServerError, "Failed to save image")
+	}
+
+	// Create request object
+	request := model.ProductCreateOrUpdateModel{
+		Name:     name,
+		Price:    price,
+		Quantity: int32(quantity),
+		Image:    file,
+	}
+
+	// Call service
+	response := controller.ProductService.Create(c.Context(), request, imagePath)
+
 	return c.Status(fiber.StatusCreated).JSON(model.GeneralResponse{
 		Code:    200,
-		Message: "Success",
+		Message: "Product created successfully",
 		Data:    response,
 	})
 }
+
 
 // Update func update one exists product.
 // @Description update one exists product.

@@ -36,7 +36,7 @@ func main() {
 	config := configuration.New()
 	database := configuration.NewDatabase(config)
 
-	err := database.AutoMigrate(&entity.User{}, &entity.UserRole{})
+	err := database.AutoMigrate(&entity.User{}, &entity.UserRole{},&entity.Product{})
 	if err != nil {
 		panic("AutoMigrate failed: " + err.Error())
 	}

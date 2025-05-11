@@ -1,14 +1,22 @@
 package model
 
+import (
+	"mime/multipart"
+)
+
 type ProductModel struct {
 	Id       string `json:"id"`
 	Name     string `json:"name"`
 	Price    int64  `json:"price"`
 	Quantity int32  `json:"quantity"`
+	ImagePath string `json:"image_path"`
 }
 
 type ProductCreateOrUpdateModel struct {
-	Name     string `json:"name" validate:"required"`
-	Price    int64  `json:"price" validate:"required"`
-	Quantity int32  `json:"quantity" validate:"required"`
+	Name     string `form:"name" validate:"required"`
+	Price    int64  `form:"price" validate:"required"`
+	Quantity int32  `form:"quantity" validate:"required"`
+	Image    *multipart.FileHeader `form:"image" validate:"required"`
+
 }
+

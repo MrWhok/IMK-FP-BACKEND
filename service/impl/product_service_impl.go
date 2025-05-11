@@ -22,12 +22,13 @@ type productServiceImpl struct {
 	Cache *redis.Client
 }
 
-func (service *productServiceImpl) Create(ctx context.Context, productModel model.ProductCreateOrUpdateModel) model.ProductCreateOrUpdateModel {
+func (service *productServiceImpl) Create(ctx context.Context, productModel model.ProductCreateOrUpdateModel, imagePath string) model.ProductCreateOrUpdateModel {
 	common.Validate(productModel)
 	product := entity.Product{
 		Name:     productModel.Name,
 		Price:    productModel.Price,
 		Quantity: productModel.Quantity,
+		ImagePath:    imagePath,
 	}
 	service.ProductRepository.Insert(ctx, product)
 	return productModel
