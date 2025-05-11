@@ -26,8 +26,8 @@ func (controller ProductController) Route(app *fiber.App) {
 	app.Post("/v1/api/product", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
 	app.Put("/v1/api/product/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.Update)
 	app.Delete("/v1/api/product/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.Delete)
-	app.Get("/v1/api/product/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.FindById)
-	app.Get("/v1/api/product", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.FindAll)
+	app.Get("/v1/api/product/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
+	app.Get("/v1/api/product", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
 }
 
 // Create func create product.

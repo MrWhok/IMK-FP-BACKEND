@@ -63,6 +63,7 @@ func (service *productServiceImpl) FindById(ctx context.Context, id string) mode
 		Name:     productCache.Name,
 		Price:    productCache.Price,
 		Quantity: productCache.Quantity,
+		ImagePath:    productCache.ImagePath,
 	}
 }
 
@@ -74,6 +75,7 @@ func (service *productServiceImpl) FindAll(ctx context.Context) (responses []mod
 			Name:     product.Name,
 			Price:    product.Price,
 			Quantity: product.Quantity,
+			ImagePath:    product.ImagePath,
 		})
 	}
 	if len(products) == 0 {
