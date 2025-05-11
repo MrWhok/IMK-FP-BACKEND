@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
 )
 
 type TransactionDetailService interface {

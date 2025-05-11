@@ -2,10 +2,10 @@ package impl
 
 import (
 	"context"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/repository"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/service"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/repository"
+	"github.com/MrWhok/IMK-FP-BACKEND/service"
 )
 
 func NewTransactionDetailServiceImpl(transactionDetailRepository *repository.TransactionDetailRepository) service.TransactionDetailService {

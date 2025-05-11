@@ -1,11 +1,11 @@
 package controller
 
 import (
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/common"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/configuration"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/service"
+	"github.com/MrWhok/IMK-FP-BACKEND/common"
+	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -20,6 +20,7 @@ type UserController struct {
 
 func (controller UserController) Route(app *fiber.App) {
 	app.Post("/v1/api/authentication", controller.Authentication)
+	app.Post("/v1/api/register", controller.Register)
 }
 
 // Authentication func Authenticate user.
@@ -55,3 +56,21 @@ func (controller UserController) Authentication(c *fiber.Ctx) error {
 		Data:    resultWithToken,
 	})
 }
+
+func (controller UserController) Register(c *fiber.Ctx) error {
+	var request model.UserModel
+	err := c.BodyParser(&request)
+	exception.PanicLogging(err)
+	
+	err = controller.UserService.Register(c.Context(), request)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
+		Code:    201,
+		Message: "User registered successfully",
+	})
+}	

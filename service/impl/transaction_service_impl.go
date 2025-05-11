@@ -2,12 +2,12 @@ package impl
 
 import (
 	"context"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/common"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/entity"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/repository"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/service"
+	"github.com/MrWhok/IMK-FP-BACKEND/common"
+	"github.com/MrWhok/IMK-FP-BACKEND/entity"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/repository"
+	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/google/uuid"
 )
 

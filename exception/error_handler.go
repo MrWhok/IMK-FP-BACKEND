@@ -2,7 +2,7 @@ package exception
 
 import (
 	"encoding/json"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/gofiber/fiber/v2"
 )
 

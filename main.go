@@ -1,17 +1,19 @@
 package main
 
 import (
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/client/restclient"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/configuration"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/controller"
-	_ "github.com/RizkiMufrizal/gofiber-clean-architecture/docs"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
-	repository "github.com/RizkiMufrizal/gofiber-clean-architecture/repository/impl"
-	service "github.com/RizkiMufrizal/gofiber-clean-architecture/service/impl"
+	"github.com/MrWhok/IMK-FP-BACKEND/client/restclient"
+	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
+	"github.com/MrWhok/IMK-FP-BACKEND/controller"
+	_ "github.com/MrWhok/IMK-FP-BACKEND/docs"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	repository "github.com/MrWhok/IMK-FP-BACKEND/repository/impl"
+	service "github.com/MrWhok/IMK-FP-BACKEND/service/impl"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
+	"github.com/MrWhok/IMK-FP-BACKEND/entity"
+	
 )
 
 // @title Go Fiber Clean Architecture
@@ -33,6 +35,13 @@ func main() {
 	//setup configuration
 	config := configuration.New()
 	database := configuration.NewDatabase(config)
+
+	err := database.AutoMigrate(&entity.User{}, &entity.UserRole{})
+	if err != nil {
+		panic("AutoMigrate failed: " + err.Error())
+	}
+
+
 	redis := configuration.NewRedis(config)
 
 	//repository
@@ -74,6 +83,6 @@ func main() {
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	//start app
-	err := app.Listen(config.Get("SERVER.PORT"))
+	err = app.Listen(config.Get("SERVER.PORT"))
 	exception.PanicLogging(err)
 }

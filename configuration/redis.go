@@ -3,7 +3,7 @@ package configuration
 import (
 	"context"
 	"encoding/json"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/go-redis/redis/v9"
 	"strconv"
 )

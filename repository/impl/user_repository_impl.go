@@ -3,9 +3,9 @@ package impl
 import (
 	"context"
 	"errors"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/entity"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/repository"
+	"github.com/MrWhok/IMK-FP-BACKEND/entity"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -18,7 +18,7 @@ type userRepositoryImpl struct {
 	*gorm.DB
 }
 
-func (userRepository *userRepositoryImpl) Create(username string, password string, roles []string) {
+func (userRepository *userRepositoryImpl) Create(username string, password string, roles []string) error {
 	var userRoles []entity.UserRole
 	for _, role := range roles {
 		userRoles = append(userRoles, entity.UserRole{
@@ -33,8 +33,12 @@ func (userRepository *userRepositoryImpl) Create(username string, password strin
 		IsActive:  true,
 		UserRoles: userRoles,
 	}
+
 	err := userRepository.DB.Create(&user).Error
-	exception.PanicLogging(err)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (userRepository *userRepositoryImpl) DeleteAll() {

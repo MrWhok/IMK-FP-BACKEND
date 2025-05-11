@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/common"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/configuration"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/common"
+	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/golang-jwt/jwt/v4"

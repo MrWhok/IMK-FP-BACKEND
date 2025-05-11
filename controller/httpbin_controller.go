@@ -1,8 +1,8 @@
 package controller
 
 import (
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/model"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/service"
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
+	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/gofiber/fiber/v2"
 )
 

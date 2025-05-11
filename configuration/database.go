@@ -1,7 +1,7 @@
 package configuration
 
 import (
-    "github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
+    "github.com/MrWhok/IMK-FP-BACKEND/exception"
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
     "gorm.io/gorm/logger"

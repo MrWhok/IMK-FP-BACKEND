@@ -1,8 +1,8 @@
 package common
 
 import (
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/configuration"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/golang-jwt/jwt/v4"
 	"strconv"
 	"time"

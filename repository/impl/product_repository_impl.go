@@ -3,9 +3,9 @@ package impl
 import (
 	"context"
 	"errors"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/entity"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/exception"
-	"github.com/RizkiMufrizal/gofiber-clean-architecture/repository"
+	"github.com/MrWhok/IMK-FP-BACKEND/entity"
+	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/repository"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
