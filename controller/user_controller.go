@@ -7,6 +7,7 @@ import (
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/gofiber/fiber/v2"
+	"github.com/MrWhok/IMK-FP-BACKEND/middleware"
 )
 
 func NewUserController(userService *service.UserService, config configuration.Config) *UserController {
@@ -21,6 +22,7 @@ type UserController struct {
 func (controller UserController) Route(app *fiber.App) {
 	app.Post("/v1/api/authentication", controller.Authentication)
 	app.Post("/v1/api/register", controller.Register)
+	app.Get("/v1/api/me", middleware.AuthenticateJWT("user", controller.Config) ,controller.Me)
 }
 
 // Authentication func Authenticate user.
@@ -74,3 +76,30 @@ func (controller UserController) Register(c *fiber.Ctx) error {
 		Message: "User registered successfully",
 	})
 }	
+
+func (controller UserController) Me(c *fiber.Ctx) error {
+	usernameInterface := c.Locals("username")
+	username, ok := usernameInterface.(string)
+	if !ok || username == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.GeneralResponse{
+			Code:    401,
+			Message: "Unauthorized",
+			Data:    "Invalid or missing user",
+		})
+	}
+
+	response, err := controller.UserService.FindMe(c.Context(), username)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.GeneralResponse{
+			Code:    500,
+			Message: "General Error",
+			Data:    err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Success",
+		Data:    response,
+	})
+}

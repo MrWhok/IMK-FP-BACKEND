@@ -59,3 +59,22 @@ func (u *userServiceImpl) Register(ctx context.Context, user model.UserModel) er
 	return nil
 
 }
+
+func (u *userServiceImpl) FindMe(ctx context.Context, username string) (model.UserModel, error) {
+	usernameResult, err := u.UserRepository.Authentication(ctx, username)
+	if err != nil {
+		return model.UserModel{}, fmt.Errorf("user not found")
+	}
+
+	var userRoles []string
+	for _, userRole := range usernameResult.UserRoles {
+		userRoles = append(userRoles, userRole.Role)
+	}
+	
+
+	return model.UserModel{
+		Username: usernameResult.Username,
+		Roles:    userRoles,
+		Points:   usernameResult.Points,
+	}, nil
+}

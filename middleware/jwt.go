@@ -16,6 +16,19 @@ func AuthenticateJWT(role string, config configuration.Config) func(*fiber.Ctx) 
 		SuccessHandler: func(ctx *fiber.Ctx) error {
 			user := ctx.Locals("user").(*jwt.Token)
 			claims := user.Claims.(jwt.MapClaims)
+
+			if username, ok := claims["username"].(string); ok {
+				ctx.Locals("username", username)
+			} else {
+				return ctx.
+					Status(fiber.StatusUnauthorized).
+					JSON(model.GeneralResponse{
+						Code:    401,
+						Message: "Unauthorized",
+						Data:    "Username claim missing",
+					})
+			}
+
 			roles := claims["roles"].([]interface{})
 
 			common.NewLogger().Info("role function ", role, " role user ", roles)
