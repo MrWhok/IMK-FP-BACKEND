@@ -11,6 +11,8 @@ import (
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/go-redis/redis/v9"
 	"github.com/google/uuid"
+	"os"
+	"fmt"
 )
 
 func NewProductServiceImpl(productRepository *repository.ProductRepository, cache *redis.Client) service.ProductService {
@@ -46,14 +48,23 @@ func (service *productServiceImpl) Update(ctx context.Context, productModel mode
 	return productModel
 }
 
-func (service *productServiceImpl) Delete(ctx context.Context, id string) {
+func (service *productServiceImpl) Delete(ctx context.Context, id string) error {
 	product, err := service.ProductRepository.FindById(ctx, id)
 	if err != nil {
 		panic(exception.NotFoundError{
 			Message: err.Error(),
 		})
 	}
+
+	if product.ImagePath != ""{
+		err := os.Remove(product.ImagePath)
+		if err != nil && !os.IsNotExist(err) {
+			return fmt.Errorf("failed to delete image: %w", err)
+		}
+	}
+
 	service.ProductRepository.Delete(ctx, product)
+	return nil
 }
 
 func (service *productServiceImpl) FindById(ctx context.Context, id string) model.ProductModel {
