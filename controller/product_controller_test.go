@@ -3,11 +3,12 @@ package controller
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/MrWhok/IMK-FP-BACKEND/model"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/MrWhok/IMK-FP-BACKEND/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreate(t *testing.T) {
@@ -15,7 +16,7 @@ func TestCreate(t *testing.T) {
 	tokenResponse := authenticationCreate()
 
 	//service
-	createProductRequest := model.ProductCreateOrUpdateModel{
+	createProductRequest := model.ProductCreateModel{
 		Name:     "Test Product",
 		Price:    1000,
 		Quantity: 1000,
@@ -38,7 +39,7 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "Success", webResponse.Message)
 
 	jsonData, _ := json.Marshal(webResponse.Data)
-	createProductResponse := model.ProductCreateOrUpdateModel{}
+	createProductResponse := model.ProductCreateModel{}
 	_ = json.Unmarshal(jsonData, &createProductResponse)
 
 	assert.Equal(t, createProductRequest.Name, createProductResponse.Name)

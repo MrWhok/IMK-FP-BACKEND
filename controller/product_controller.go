@@ -1,16 +1,16 @@
 package controller
 
 import (
+	"fmt"
+	"strconv"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/middleware"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/gofiber/fiber/v2"
-	"fmt"
-	"strconv"
 	"github.com/google/uuid"
-
 )
 
 type ProductController struct {
@@ -24,8 +24,9 @@ func NewProductController(productService *service.ProductService, config configu
 
 func (controller ProductController) Route(app *fiber.App) {
 	productGroup := app.Group("/v1/api/product")
+
 	productGroup.Post("", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
-	productGroup.Put("/:id", middleware.AuthenticateJWT("ROLE_ADMIN", controller.Config), controller.Update)
+	productGroup.Put("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Update)
 	productGroup.Delete("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Delete)
 	productGroup.Get("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
 	productGroup.Get("", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
@@ -48,7 +49,6 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 	quantityStr := c.FormValue("quantity")
 
 	fmt.Println("DEBUG FORM:", name, priceStr, quantityStr)
-
 
 	if name == "" || priceStr == "" || quantityStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
@@ -79,12 +79,9 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Image is required")
 	}
 
-
 	// Save image to local folder
 	imageID := uuid.New().String()
 	imageName := fmt.Sprintf("%s.png", imageID)
-
-
 
 	imagePath := fmt.Sprintf("./media/products/%s", imageName)
 	if err := c.SaveFile(file, imagePath); err != nil {
@@ -92,7 +89,7 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 	}
 
 	// Create request object
-	request := model.ProductCreateOrUpdateModel{
+	request := model.ProductCreateModel{
 		Name:     name,
 		Price:    price,
 		Quantity: int32(quantity),
@@ -109,7 +106,6 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 	})
 }
 
-
 // Update func update one exists product.
 // @Description update one exists product.
 // @Summary update one exists product
@@ -122,10 +118,16 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 // @Security JWT
 // @Router /v1/api/product/{id} [put]
 func (controller ProductController) Update(c *fiber.Ctx) error {
-	var request model.ProductCreateOrUpdateModel
+	var request model.ProductUpdateModel
 	id := c.Params("id")
 	err := c.BodyParser(&request)
 	exception.PanicLogging(err)
+
+	file, err := c.FormFile("image")
+	if err != nil {
+		return fiber.NewError(fiber.StatusBadRequest, "Image is required")
+	}
+	request.Image = file
 
 	response := controller.ProductService.Update(c.Context(), request, id)
 	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
