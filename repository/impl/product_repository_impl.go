@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"errors"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/repository"
@@ -48,5 +49,11 @@ func (repository *productRepositoryImpl) FindById(ctx context.Context, id string
 func (repository *productRepositoryImpl) FindAl(ctx context.Context) []entity.Product {
 	var products []entity.Product
 	repository.DB.WithContext(ctx).Find(&products)
+	return products
+}
+
+func (repository *productRepositoryImpl) FindByUsername(ctx context.Context, username string) []entity.Product {
+	var products []entity.Product
+	repository.DB.WithContext(ctx).Where("user_id = ?", username).Find(&products)
 	return products
 }

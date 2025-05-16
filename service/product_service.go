@@ -12,4 +12,5 @@ type ProductService interface {
 	Delete(ctx context.Context, id string) error
 	FindById(ctx context.Context, id string) model.ProductModel
 	FindAll(ctx context.Context) []model.ProductModel
+	FindByUsername(ctx context.Context, username string) []model.ProductModel
 }

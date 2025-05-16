@@ -25,6 +25,7 @@ func NewProductController(productService *service.ProductService, config configu
 func (controller ProductController) Route(app *fiber.App) {
 	productGroup := app.Group("/v1/api/product")
 
+	productGroup.Get("/myproducts", middleware.AuthenticateJWT("user", controller.Config), controller.MyProducts)
 	productGroup.Post("", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
 	productGroup.Put("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Update)
 	productGroup.Delete("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Delete)
@@ -189,6 +190,20 @@ func (controller ProductController) FindById(c *fiber.Ctx) error {
 // @Router /v1/api/product [get]
 func (controller ProductController) FindAll(c *fiber.Ctx) error {
 	result := controller.ProductService.FindAll(c.Context())
+	fmt.Println("In the findAll controller:")
+	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func (controller ProductController) MyProducts(c *fiber.Ctx) error {
+	username := c.Locals("username").(string)
+
+	fmt.Println("Username from JWT:", username)
+
+	result := controller.ProductService.FindByUsername(c.Context(), username)
 	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
 		Code:    200,
 		Message: "Success",

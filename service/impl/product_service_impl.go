@@ -28,11 +28,15 @@ type productServiceImpl struct {
 
 func (service *productServiceImpl) Create(ctx context.Context, productModel model.ProductCreateModel, imagePath string) model.ProductCreateModel {
 	common.Validate(productModel)
+
+	username := ctx.Value("username").(string)
+
 	product := entity.Product{
 		Name:      productModel.Name,
 		Price:     productModel.Price,
 		Quantity:  productModel.Quantity,
 		ImagePath: imagePath,
+		Owner:     entity.User{Username: username},
 	}
 	service.ProductRepository.Insert(ctx, product)
 	return productModel
@@ -144,6 +148,24 @@ func (service *productServiceImpl) FindById(ctx context.Context, id string) mode
 
 func (service *productServiceImpl) FindAll(ctx context.Context) (responses []model.ProductModel) {
 	products := service.ProductRepository.FindAl(ctx)
+	for _, product := range products {
+		responses = append(responses, model.ProductModel{
+			Id:        product.Id.String(),
+			Name:      product.Name,
+			Price:     product.Price,
+			Quantity:  product.Quantity,
+			ImagePath: product.ImagePath,
+		})
+	}
+	if len(products) == 0 {
+		return []model.ProductModel{}
+	}
+	return responses
+}
+
+func (service *productServiceImpl) FindByUsername(ctx context.Context, username string) (responses []model.ProductModel) {
+	products := service.ProductRepository.FindByUsername(ctx, username)
+
 	for _, product := range products {
 		responses = append(responses, model.ProductModel{
 			Id:        product.Id.String(),
