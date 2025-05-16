@@ -2,13 +2,14 @@ package impl
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/repository"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"golang.org/x/crypto/bcrypt"
-	"fmt"
 )
 
 func NewUserServiceImpl(userRepository *repository.UserRepository) service.UserService {
@@ -35,9 +36,9 @@ func (userService *userServiceImpl) Authentication(ctx context.Context, model mo
 	return userResult
 }
 
-func (u *userServiceImpl) Register(ctx context.Context, user model.UserModel) error {
+func (u *userServiceImpl) Register(ctx context.Context, user model.UserCreateModel) error {
 
-	_,err := u.UserRepository.Authentication(ctx, user.Username)
+	_, err := u.UserRepository.Authentication(ctx, user.Username)
 	if err == nil {
 		return fmt.Errorf("username already exists")
 	}
@@ -52,7 +53,7 @@ func (u *userServiceImpl) Register(ctx context.Context, user model.UserModel) er
 		roles = []string{"user"}
 	}
 
-	err = u.UserRepository.Create(user.Username, string(hasedPassword), roles)
+	err = u.UserRepository.Create(user.Username, string(hasedPassword), roles, user.Address, user.Phone, user.Email, user.FirstName, user.LastName)
 	if err != nil {
 		return fmt.Errorf("failed to create user: %v", err)
 	}
@@ -60,21 +61,25 @@ func (u *userServiceImpl) Register(ctx context.Context, user model.UserModel) er
 
 }
 
-func (u *userServiceImpl) FindMe(ctx context.Context, username string) (model.UserModel, error) {
+func (u *userServiceImpl) FindMe(ctx context.Context, username string) (model.UserCreateModel, error) {
 	usernameResult, err := u.UserRepository.Authentication(ctx, username)
 	if err != nil {
-		return model.UserModel{}, fmt.Errorf("user not found")
+		return model.UserCreateModel{}, fmt.Errorf("user not found")
 	}
 
 	var userRoles []string
 	for _, userRole := range usernameResult.UserRoles {
 		userRoles = append(userRoles, userRole.Role)
 	}
-	
 
-	return model.UserModel{
-		Username: usernameResult.Username,
-		Roles:    userRoles,
-		Points:   usernameResult.Points,
+	return model.UserCreateModel{
+		Username:  usernameResult.Username,
+		FirstName: usernameResult.FirstName,
+		LastName:  usernameResult.LastName,
+		Email:     usernameResult.Email,
+		Phone:     usernameResult.Phone,
+		Address:   usernameResult.Address,
+		Roles:     userRoles,
+		Points:    usernameResult.Points,
 	}, nil
 }

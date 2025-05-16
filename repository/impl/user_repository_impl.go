@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"errors"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/repository"
@@ -18,7 +19,7 @@ type userRepositoryImpl struct {
 	*gorm.DB
 }
 
-func (userRepository *userRepositoryImpl) Create(username string, password string, roles []string) error {
+func (userRepository *userRepositoryImpl) Create(username string, password string, roles []string, address string, phone string, email string, firtName string, lastName string) error {
 	var userRoles []entity.UserRole
 	for _, role := range roles {
 		userRoles = append(userRoles, entity.UserRole{
@@ -32,6 +33,11 @@ func (userRepository *userRepositoryImpl) Create(username string, password strin
 		Password:  password,
 		IsActive:  true,
 		UserRoles: userRoles,
+		FirstName: firtName,
+		LastName:  lastName,
+		Email:     email,
+		Phone:     phone,
+		Address:   address,
 	}
 
 	err := userRepository.DB.Create(&user).Error

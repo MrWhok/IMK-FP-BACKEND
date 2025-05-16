@@ -4,10 +4,10 @@ import (
 	"github.com/MrWhok/IMK-FP-BACKEND/common"
 	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
+	"github.com/MrWhok/IMK-FP-BACKEND/middleware"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
 	"github.com/gofiber/fiber/v2"
-	"github.com/MrWhok/IMK-FP-BACKEND/middleware"
 )
 
 func NewUserController(userService *service.UserService, config configuration.Config) *UserController {
@@ -22,7 +22,7 @@ type UserController struct {
 func (controller UserController) Route(app *fiber.App) {
 	app.Post("/v1/api/authentication", controller.Authentication)
 	app.Post("/v1/api/register", controller.Register)
-	app.Get("/v1/api/me", middleware.AuthenticateJWT("user", controller.Config) ,controller.Me)
+	app.Get("/v1/api/me", middleware.AuthenticateJWT("user", controller.Config), controller.Me)
 }
 
 // Authentication func Authenticate user.
@@ -60,10 +60,10 @@ func (controller UserController) Authentication(c *fiber.Ctx) error {
 }
 
 func (controller UserController) Register(c *fiber.Ctx) error {
-	var request model.UserModel
+	var request model.UserCreateModel
 	err := c.BodyParser(&request)
 	exception.PanicLogging(err)
-	
+
 	err = controller.UserService.Register(c.Context(), request)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
@@ -75,7 +75,7 @@ func (controller UserController) Register(c *fiber.Ctx) error {
 		Code:    201,
 		Message: "User registered successfully",
 	})
-}	
+}
 
 func (controller UserController) Me(c *fiber.Ctx) error {
 	usernameInterface := c.Locals("username")
