@@ -5,6 +5,7 @@ import (
 	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
 	"github.com/MrWhok/IMK-FP-BACKEND/controller"
 	_ "github.com/MrWhok/IMK-FP-BACKEND/docs"
+	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	repository "github.com/MrWhok/IMK-FP-BACKEND/repository/impl"
 	service "github.com/MrWhok/IMK-FP-BACKEND/service/impl"
@@ -12,8 +13,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
-	"github.com/MrWhok/IMK-FP-BACKEND/entity"
-	
 )
 
 // @title Go Fiber Clean Architecture
@@ -36,11 +35,20 @@ func main() {
 	config := configuration.New()
 	database := configuration.NewDatabase(config)
 
-	err := database.AutoMigrate(&entity.User{}, &entity.UserRole{},&entity.Product{})
+	err := database.AutoMigrate(
+		&entity.User{},
+		&entity.UserRole{},
+		&entity.Product{},
+		&entity.Cart{})
+
+	// database.AutoMigrate(&entity.Cart{})
+	// database.AutoMigrate(&entity.User{})
+	// database.AutoMigrate(&entity.UserRole{})
+	// database.AutoMigrate(&entity.Product{})
+	// err := database.AutoMigrate(&entity.Cart{})
 	if err != nil {
 		panic("AutoMigrate failed: " + err.Error())
 	}
-
 
 	redis := configuration.NewRedis(config)
 
@@ -49,6 +57,7 @@ func main() {
 	transactionRepository := repository.NewTransactionRepositoryImpl(database)
 	transactionDetailRepository := repository.NewTransactionDetailRepositoryImpl(database)
 	userRepository := repository.NewUserRepositoryImpl(database)
+	cartRepository := repository.NewCartRepositoryImpl(database)
 
 	//rest client
 	httpBinRestClient := restclient.NewHttpBinRestClient()
@@ -59,6 +68,7 @@ func main() {
 	transactionDetailService := service.NewTransactionDetailServiceImpl(&transactionDetailRepository)
 	userService := service.NewUserServiceImpl(&userRepository)
 	httpBinService := service.NewHttpBinServiceImpl(&httpBinRestClient)
+	cartService := service.NewCartServiceImpl(cartRepository, productRepository)
 
 	//controller
 	productController := controller.NewProductController(&productService, config)
@@ -66,6 +76,7 @@ func main() {
 	transactionDetailController := controller.NewTransactionDetailController(&transactionDetailService, config)
 	userController := controller.NewUserController(&userService, config)
 	httpBinController := controller.NewHttpBinController(&httpBinService)
+	cartController := controller.NewCartController(&cartService, config)
 
 	//setup fiber
 	app := fiber.New(configuration.NewFiberConfiguration())
@@ -78,6 +89,7 @@ func main() {
 	transactionDetailController.Route(app)
 	userController.Route(app)
 	httpBinController.Route(app)
+	cartController.Route(app)
 
 	//swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)
