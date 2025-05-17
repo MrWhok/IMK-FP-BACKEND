@@ -25,8 +25,8 @@ func (cartController CartController) Route(app *fiber.App) {
 
 	cartGroup.Post("/add", middleware.AuthenticateJWT("user", cartController.Config), cartController.AddToCart)
 	cartGroup.Get("/", middleware.AuthenticateJWT("user", cartController.Config), cartController.GetMyCart)
-	// cartGroup.Put("/:product_id", middleware.AuthenticateJWT("user", controller.Config), cartController.UpdateCartItem)
-	// cartGroup.Delete("/:product_id", middleware.AuthenticateJWT("user", controller.Config), cartController.DeleteCartItem)
+	cartGroup.Put("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.UpdateCartItem)
+	cartGroup.Delete("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.DeleteCartItem)
 
 }
 
@@ -55,5 +55,31 @@ func (c *CartController) GetMyCart(ctx *fiber.Ctx) error {
 		Code:    200,
 		Message: "Success",
 		Data:    cart,
+	})
+}
+
+func (c *CartController) UpdateCartItem(ctx *fiber.Ctx) error {
+	username := ctx.Locals("username").(string)
+	productID := ctx.Params("product_id")
+
+	var req model.UpdateCartRequest
+	err := ctx.BodyParser(&req)
+	exception.PanicLogging(err)
+
+	c.CartService.UpdateCartItem(ctx.Context(), username, productID, req)
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Cart item updated",
+	})
+}
+
+func (c *CartController) DeleteCartItem(ctx *fiber.Ctx) error {
+	username := ctx.Locals("username").(string)
+	productID := ctx.Params("product_id")
+
+	c.CartService.DeleteCartItem(ctx.Context(), username, productID)
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Cart item deleted",
 	})
 }

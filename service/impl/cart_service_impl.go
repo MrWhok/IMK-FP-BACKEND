@@ -25,26 +25,25 @@ type cartServiceImpl struct {
 func (s *cartServiceImpl) AddToCart(ctx context.Context, username string, request model.AddToCartRequest) model.AddToCartResponse {
 	product, err := s.productRepo.FindById(ctx, request.ProductID)
 	if err != nil {
-		panic(exception.NotFoundError{
-			Message: err.Error(),
-		})
+		panic(exception.NotFoundError{Message: err.Error()})
 	}
 	if product.Quantity < request.Quantity {
-		panic(exception.BadRequestError{
-			Message: "Not enough product quantity",
-		})
+		panic(exception.BadRequestError{Message: "Not enough product quantity"})
 	}
 
-	entityCart := entity.Cart{
-		Username:  username,
+	cart, _ := s.cartRepo.FindOrCreateCartByUsername(ctx, username)
+
+	item := entity.CartItem{
+		CartID:    cart.ID,
 		ProductID: request.ProductID,
 		Quantity:  request.Quantity,
 	}
 
-	result := s.cartRepo.AddToCart(ctx, entityCart)
+	result := s.cartRepo.AddToCartItem(ctx, item)
 
 	return model.AddToCartResponse{
-		ID:          result.ID,
+		ItemID:      result.ID,
+		CartID:      cart.ID,
 		ProductID:   product.Id.String(),
 		ProductName: product.Name,
 		Quantity:    result.Quantity,
@@ -52,11 +51,11 @@ func (s *cartServiceImpl) AddToCart(ctx context.Context, username string, reques
 }
 
 func (s *cartServiceImpl) GetMyCart(ctx context.Context, username string) model.CartItemFinalResponse {
-	carts, _ := s.cartRepo.FindByUsername(ctx, username)
+	items, _ := s.cartRepo.FindCartItemsByUsername(ctx, username)
 
-	var items []model.CartItemResponse
-	for _, item := range carts {
-		items = append(items, model.CartItemResponse{
+	var cartItems []model.CartItemResponse
+	for _, item := range items {
+		cartItems = append(cartItems, model.CartItemResponse{
 			ProductID: item.ProductID,
 			Name:      item.Product.Name,
 			Price:     item.Product.Price,
@@ -67,6 +66,20 @@ func (s *cartServiceImpl) GetMyCart(ctx context.Context, username string) model.
 
 	return model.CartItemFinalResponse{
 		Username: username,
-		Items:    items,
+		Items:    cartItems,
 	}
+}
+
+func (s *cartServiceImpl) UpdateCartItem(ctx context.Context, username string, productID string, req model.UpdateCartRequest) {
+	cartItem, err := s.cartRepo.FindItemByUsernameAndProductID(ctx, username, productID)
+	if err != nil {
+		panic(exception.NotFoundError{Message: "Cart item not found"})
+	}
+
+	cartItem.Quantity = req.Quantity
+	s.cartRepo.UpdateItem(ctx, cartItem)
+}
+
+func (s *cartServiceImpl) DeleteCartItem(ctx context.Context, username string, productID string) {
+	s.cartRepo.DeleteItem(ctx, username, productID)
 }

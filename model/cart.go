@@ -6,7 +6,8 @@ type AddToCartRequest struct {
 }
 
 type AddToCartResponse struct {
-	ID          uint   `json:"id"`
+	ItemID      uint   `json:"item_id"`
+	CartID      uint   `json:"cart_id"`
 	ProductID   string `json:"product_id"`
 	ProductName string `json:"product_name"`
 	Quantity    int32  `json:"quantity"`
@@ -23,4 +24,8 @@ type CartItemResponse struct {
 type CartItemFinalResponse struct {
 	Username string             `json:"username"`
 	Items    []CartItemResponse `json:"items"`
+}
+
+type UpdateCartRequest struct {
+	Quantity int32 `json:"quantity" validate:"required,min=1"`
 }

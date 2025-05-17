@@ -39,7 +39,8 @@ func main() {
 		&entity.User{},
 		&entity.UserRole{},
 		&entity.Product{},
-		&entity.Cart{})
+		&entity.Cart{},
+		&entity.CartItem{})
 
 	// database.AutoMigrate(&entity.Cart{})
 	// database.AutoMigrate(&entity.User{})
