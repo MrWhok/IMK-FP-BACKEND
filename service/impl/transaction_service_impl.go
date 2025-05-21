@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/common"
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
@@ -11,12 +12,22 @@ import (
 	"github.com/google/uuid"
 )
 
-func NewTransactionServiceImpl(transactionRepository *repository.TransactionRepository) service.TransactionService {
-	return &transactionServiceImpl{TransactionRepository: *transactionRepository}
+func NewTransactionServiceImpl(
+	transactionRepository *repository.TransactionRepository,
+	cartRepo repository.CartRepository,
+	productRepo repository.ProductRepository,
+) service.TransactionService {
+	return &transactionServiceImpl{
+		TransactionRepository: *transactionRepository,
+		cartRepo:              cartRepo,
+		productRepo:           productRepo,
+	}
 }
 
 type transactionServiceImpl struct {
 	repository.TransactionRepository
+	cartRepo    repository.CartRepository
+	productRepo repository.ProductRepository
 }
 
 func (transactionService *transactionServiceImpl) Create(ctx context.Context, transactionModel model.TransactionCreateUpdateModel) model.TransactionCreateUpdateModel {
@@ -114,4 +125,92 @@ func (transactionService *transactionServiceImpl) FindAll(ctx context.Context) (
 	}
 
 	return responses
+}
+
+func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) model.TransactionModel {
+	// Get cart
+	cart, err := s.cartRepo.FindByUsername(ctx, username)
+	exception.PanicLogging(err)
+
+	if len(cart.Items) == 0 {
+		panic(exception.NotFoundError{Message: "Cart is empty"})
+	}
+
+	transactionId := uuid.New()
+	var total int64
+	var details []entity.TransactionDetail
+
+	for _, item := range cart.Items {
+		subTotal := int64(item.Quantity) * item.Product.Price
+		productUUID, err := uuid.Parse(item.ProductID)
+		if err != nil {
+			panic("invalid ProductID: " + item.ProductID)
+		}
+
+		// 🟨 Fetch product from DB
+		productEntity, err := s.productRepo.FindById(ctx, item.ProductID)
+		exception.PanicLogging(err)
+
+		// 🔴 Check if stock is sufficient
+		if productEntity.Quantity < item.Quantity {
+			panic(exception.BadRequestError{Message: "Insufficient stock for product: " + productEntity.Name})
+		}
+
+		// 🟩 Reduce stock
+		productEntity.Quantity -= item.Quantity
+
+		// 🟦 Update product in DB
+		s.productRepo.Update(ctx, productEntity)
+
+		details = append(details, entity.TransactionDetail{
+			Id:            uuid.New(),
+			TransactionId: transactionId,
+			ProductId:     productUUID,
+			Price:         item.Product.Price,
+			Quantity:      item.Quantity,
+			SubTotalPrice: subTotal,
+		})
+		total += subTotal
+	}
+
+	transaction := entity.Transaction{
+		Id:                 transactionId,
+		TotalPrice:         total,
+		TransactionDetails: details,
+	}
+
+	// Save transaction
+	s.TransactionRepository.Insert(ctx, transaction)
+
+	// Clear cart
+	for _, item := range cart.Items {
+		s.cartRepo.DeleteItem(ctx, username, item.ProductID)
+	}
+
+	// Build response
+	var detailModels []model.TransactionDetailModel
+	for _, d := range details {
+		product, err := s.productRepo.FindById(ctx, d.ProductId.String())
+		exception.PanicLogging(err)
+
+		detailModels = append(detailModels, model.TransactionDetailModel{
+			Id:            d.Id.String(),
+			SubTotalPrice: d.SubTotalPrice,
+			Price:         d.Price,
+			Quantity:      d.Quantity,
+			Product: model.ProductModel{
+				Id:        product.Id.String(),
+				Name:      product.Name,
+				Price:     product.Price,
+				Quantity:  product.Quantity,
+				ImagePath: product.ImagePath,
+			},
+		})
+	}
+
+	return model.TransactionModel{
+		Id:                 transactionId.String(),
+		TotalPrice:         total,
+		TransactionDetails: detailModels,
+	}
 }

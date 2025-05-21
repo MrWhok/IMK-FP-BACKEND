@@ -74,3 +74,13 @@ func (r *cartRepositoryImpl) DeleteItem(ctx context.Context, username, productID
 		Delete(&entity.CartItem{}).Error
 	exception.PanicLogging(err)
 }
+
+func (r *cartRepositoryImpl) FindByUsername(ctx context.Context, username string) (entity.Cart, error) {
+	var cart entity.Cart
+	err := r.WithContext(ctx).
+		Preload("Items").
+		Preload("Items.Product").
+		Where("username = ?", username).
+		First(&cart).Error
+	return cart, err
+}

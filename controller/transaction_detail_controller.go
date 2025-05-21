@@ -18,7 +18,7 @@ func NewTransactionDetailController(transactionDetailService *service.Transactio
 }
 
 func (controller TransactionDetailController) Route(app *fiber.App) {
-	app.Get("/v1/api/transaction-detail/:id", middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.FindById)
+	app.Get("/v1/api/transaction-detail/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
 }
 
 // FindById func gets one exists transaction detail.

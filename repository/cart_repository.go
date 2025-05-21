@@ -13,4 +13,5 @@ type CartRepository interface {
 	FindItemByUsernameAndProductID(ctx context.Context, username, productID string) (entity.CartItem, error)
 	UpdateItem(ctx context.Context, item entity.CartItem)
 	DeleteItem(ctx context.Context, username, productID string)
+	FindByUsername(ctx context.Context, username string) (entity.Cart, error)
 }

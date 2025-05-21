@@ -19,10 +19,14 @@ func NewTransactionController(transactionService *service.TransactionService, co
 }
 
 func (controller TransactionController) Route(app *fiber.App) {
-	app.Post("/v1/api/transaction", middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.Create)
-	app.Delete("/v1/api/transaction/:id", middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.Delete)
-	app.Get("/v1/api/transaction/:id", middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.FindById)
-	app.Get("/v1/api/transaction", middleware.AuthenticateJWT("ROLE_USER", controller.Config), controller.FindAll)
+	transactionGroup := app.Group("/v1/api/transaction")
+
+	transactionGroup.Post("", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
+	transactionGroup.Delete("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Delete)
+	transactionGroup.Get("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
+	transactionGroup.Get("", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
+	transactionGroup.Post("/checkout", middleware.AuthenticateJWT("user", controller.Config), controller.Checkout)
+
 }
 
 // Create func create transaction.
@@ -103,6 +107,16 @@ func (controller TransactionController) FindAll(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
 		Code:    200,
 		Message: "Success",
+		Data:    result,
+	})
+}
+
+func (controller TransactionController) Checkout(ctx *fiber.Ctx) error {
+	username := ctx.Locals("username").(string)
+	result := controller.TransactionService.Checkout(ctx.Context(), username)
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Checkout success",
 		Data:    result,
 	})
 }

@@ -40,7 +40,9 @@ func main() {
 		&entity.UserRole{},
 		&entity.Product{},
 		&entity.Cart{},
-		&entity.CartItem{})
+		&entity.CartItem{},
+		&entity.Transaction{},
+		&entity.TransactionDetail{})
 
 	// database.AutoMigrate(&entity.Cart{})
 	// database.AutoMigrate(&entity.User{})
@@ -65,7 +67,7 @@ func main() {
 
 	//service
 	productService := service.NewProductServiceImpl(&productRepository, redis)
-	transactionService := service.NewTransactionServiceImpl(&transactionRepository)
+	transactionService := service.NewTransactionServiceImpl(&transactionRepository, cartRepository, productRepository)
 	transactionDetailService := service.NewTransactionDetailServiceImpl(&transactionDetailRepository)
 	userService := service.NewUserServiceImpl(&userRepository)
 	httpBinService := service.NewHttpBinServiceImpl(&httpBinRestClient)

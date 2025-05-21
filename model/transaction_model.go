@@ -30,3 +30,15 @@ type TransactionDetailCreateUpdateModel struct {
 	ProductId     uuid.UUID `json:"product_id" validate:"required"`
 	Product       ProductModel
 }
+
+type CheckoutResponse struct {
+	TransactionId string `json:"transaction_id"`
+	TotalPrice    int64  `json:"total_price"`
+}
+
+type TransactionItemInfo struct {
+	ProductID string `json:"product_id"`
+	Name      string `json:"name"`
+	Price     int64  `json:"price"`
+	Quantity  int32  `json:"quantity"`
+}

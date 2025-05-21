@@ -27,7 +27,6 @@ func (cartController CartController) Route(app *fiber.App) {
 	cartGroup.Get("/", middleware.AuthenticateJWT("user", cartController.Config), cartController.GetMyCart)
 	cartGroup.Put("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.UpdateCartItem)
 	cartGroup.Delete("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.DeleteCartItem)
-
 }
 
 func (c *CartController) AddToCart(ctx *fiber.Ctx) error {
