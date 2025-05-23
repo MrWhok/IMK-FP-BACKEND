@@ -43,7 +43,7 @@ func ScrapNews() ([]model.News, error) {
 					Source: portal.Source,
 				}
 				result = append(result, news)
-				fmt.Printf("Title: %s\nLink: %s\nImage: %s\n\n", news.Title, news.Link, news.Image)
+				// fmt.Printf("Title: %s\nLink: %s\nImage: %s\n\n", news.Title, news.Link, news.Image)
 			}
 		})
 

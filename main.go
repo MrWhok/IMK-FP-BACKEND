@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/swagger"
+	"github.com/robfig/cron"
 )
 
 // @title Go Fiber Clean Architecture
@@ -61,6 +62,7 @@ func main() {
 	transactionDetailRepository := repository.NewTransactionDetailRepositoryImpl(database)
 	userRepository := repository.NewUserRepositoryImpl(database)
 	cartRepository := repository.NewCartRepositoryImpl(database)
+	newsRepository := repository.NewFileNewsRepo("data/cache.json")
 
 	//rest client
 	httpBinRestClient := restclient.NewHttpBinRestClient()
@@ -72,6 +74,7 @@ func main() {
 	userService := service.NewUserServiceImpl(&userRepository)
 	httpBinService := service.NewHttpBinServiceImpl(&httpBinRestClient)
 	cartService := service.NewCartServiceImpl(cartRepository, productRepository)
+	newsService := service.NewNewsServiceImpl(newsRepository)
 
 	//controller
 	productController := controller.NewProductController(&productService, config)
@@ -80,11 +83,18 @@ func main() {
 	userController := controller.NewUserController(&userService, config)
 	httpBinController := controller.NewHttpBinController(&httpBinService)
 	cartController := controller.NewCartController(&cartService, config)
+	newsController := controller.NewNewsController(&newsService)
 
 	//setup fiber
 	app := fiber.New(configuration.NewFiberConfiguration())
 	app.Use(recover.New())
 	app.Use(cors.New())
+
+	// cronjob
+	cronJob := cron.New()
+	cronJob.AddFunc("0 0 * * *", newsService.FetchAndUpdate)
+	cronJob.Start()
+	go newsService.FetchAndUpdate()
 
 	//routing
 	productController.Route(app)
@@ -93,6 +103,7 @@ func main() {
 	userController.Route(app)
 	httpBinController.Route(app)
 	cartController.Route(app)
+	newsController.Route(app)
 
 	//swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)
