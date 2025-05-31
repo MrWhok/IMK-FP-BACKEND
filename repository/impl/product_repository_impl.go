@@ -57,3 +57,9 @@ func (repository *productRepositoryImpl) FindByUsername(ctx context.Context, use
 	repository.DB.WithContext(ctx).Where("user_id = ?", username).Find(&products)
 	return products
 }
+
+func (r *userRepositoryImpl) FindAllOrderedByPoints(ctx context.Context) ([]entity.User, error) {
+	var users []entity.User
+	result := r.DB.WithContext(ctx).Order("points DESC").Find(&users)
+	return users, result.Error
+}

@@ -23,6 +23,7 @@ func (controller UserController) Route(app *fiber.App) {
 	app.Post("/v1/api/authentication", controller.Authentication)
 	app.Post("/v1/api/register", controller.Register)
 	app.Get("/v1/api/me", middleware.AuthenticateJWT("user", controller.Config), controller.Me)
+	app.Get("/v1/api/leaderboard", middleware.AuthenticateJWT("user", controller.Config), controller.Leaderboard)
 }
 
 // Authentication func Authenticate user.
@@ -101,5 +102,22 @@ func (controller UserController) Me(c *fiber.Ctx) error {
 		Code:    200,
 		Message: "Success",
 		Data:    response,
+	})
+}
+
+func (controller UserController) Leaderboard(c *fiber.Ctx) error {
+	leaderboard, err := controller.UserService.GetLeaderboard(c.Context())
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.GeneralResponse{
+			Code:    500,
+			Message: "Failed to fetch leaderboard",
+			Data:    err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Success",
+		Data:    leaderboard,
 	})
 }

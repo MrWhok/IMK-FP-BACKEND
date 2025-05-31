@@ -18,3 +18,9 @@ type UserCreateModel struct {
 	Roles     []string `json:"roles" validate:"required"`
 	Points    int32    `json:"points" validate:"required"`
 }
+
+type UserLeaderboardModel struct {
+	Rank     int    `json:"rank"`
+	Username string `json:"username"`
+	Points   int32  `json:"points"`
+}

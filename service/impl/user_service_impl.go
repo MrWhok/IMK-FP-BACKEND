@@ -83,3 +83,21 @@ func (u *userServiceImpl) FindMe(ctx context.Context, username string) (model.Us
 		Points:    usernameResult.Points,
 	}, nil
 }
+
+func (s *userServiceImpl) GetLeaderboard(ctx context.Context) ([]model.UserLeaderboardModel, error) {
+	users, err := s.UserRepository.FindAllOrderedByPoints(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var leaderboard []model.UserLeaderboardModel
+	for i, user := range users {
+		leaderboard = append(leaderboard, model.UserLeaderboardModel{
+			Rank:     i + 1,
+			Username: user.Username,
+			Points:   user.Points,
+		})
+	}
+
+	return leaderboard, nil
+}

@@ -12,4 +12,5 @@ type UserRepository interface {
 	DeleteAll()
 	FindByUsername(ctx context.Context, username string) (entity.User, error)
 	Update(ctx context.Context, user entity.User) error
+	FindAllOrderedByPoints(ctx context.Context) ([]entity.User, error)
 }
