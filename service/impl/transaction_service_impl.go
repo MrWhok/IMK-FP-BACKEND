@@ -16,11 +16,13 @@ func NewTransactionServiceImpl(
 	transactionRepository *repository.TransactionRepository,
 	cartRepo repository.CartRepository,
 	productRepo repository.ProductRepository,
+	userRepo repository.UserRepository,
 ) service.TransactionService {
 	return &transactionServiceImpl{
 		TransactionRepository: *transactionRepository,
 		cartRepo:              cartRepo,
 		productRepo:           productRepo,
+		userRepo:              userRepo,
 	}
 }
 
@@ -28,6 +30,7 @@ type transactionServiceImpl struct {
 	repository.TransactionRepository
 	cartRepo    repository.CartRepository
 	productRepo repository.ProductRepository
+	userRepo    repository.UserRepository
 }
 
 func (transactionService *transactionServiceImpl) Create(ctx context.Context, transactionModel model.TransactionCreateUpdateModel) model.TransactionCreateUpdateModel {
@@ -181,6 +184,15 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 
 	// Save transaction
 	s.TransactionRepository.Insert(ctx, transaction)
+
+	// ✅ Add 10 points to user
+	user, err := s.userRepo.FindByUsername(ctx, username)
+	exception.PanicLogging(err)
+
+	user.Points += 10
+
+	err = s.userRepo.Update(ctx, user)
+	exception.PanicLogging(err)
 
 	// Clear cart
 	for _, item := range cart.Items {

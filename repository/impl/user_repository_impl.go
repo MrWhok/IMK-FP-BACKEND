@@ -64,3 +64,13 @@ func (userRepository *userRepositoryImpl) Authentication(ctx context.Context, us
 	}
 	return userResult, nil
 }
+
+func (r *userRepositoryImpl) FindByUsername(ctx context.Context, username string) (entity.User, error) {
+	var user entity.User
+	result := r.DB.WithContext(ctx).Where("username = ?", username).First(&user)
+	return user, result.Error
+}
+
+func (r *userRepositoryImpl) Update(ctx context.Context, user entity.User) error {
+	return r.DB.WithContext(ctx).Save(&user).Error
+}
