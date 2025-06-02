@@ -12,7 +12,8 @@ import (
 func AuthenticateJWT(role string, config configuration.Config) func(*fiber.Ctx) error {
 	jwtSecret := config.Get("JWT_SECRET_KEY")
 	return jwtware.New(jwtware.Config{
-		SigningKey: []byte(jwtSecret),
+		SigningKey:  []byte(jwtSecret),
+		TokenLookup: "cookie:token",
 		SuccessHandler: func(ctx *fiber.Ctx) error {
 			user := ctx.Locals("user").(*jwt.Token)
 			claims := user.Claims.(jwt.MapClaims)
