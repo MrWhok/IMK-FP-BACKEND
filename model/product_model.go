@@ -16,6 +16,7 @@ type ProductCreateModel struct {
 	Name     string                `form:"name" validate:"required"`
 	Price    int64                 `form:"price" validate:"required"`
 	Quantity int32                 `form:"quantity" validate:"required"`
+	Category string                `form:"category" validate:"required"`
 	Image    *multipart.FileHeader `form:"image" validate:"required"`
 }
 

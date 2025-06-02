@@ -48,8 +48,9 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 	name := c.FormValue("name")
 	priceStr := c.FormValue("price")
 	quantityStr := c.FormValue("quantity")
+	category := c.FormValue("category")
 
-	fmt.Println("DEBUG FORM:", name, priceStr, quantityStr)
+	fmt.Println("DEBUG FORM:", name, priceStr, quantityStr, category)
 
 	if name == "" || priceStr == "" || quantityStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
@@ -94,6 +95,7 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 		Name:     name,
 		Price:    price,
 		Quantity: int32(quantity),
+		Category: category,
 		Image:    file,
 	}
 
