@@ -35,6 +35,7 @@ func (service *productServiceImpl) Create(ctx context.Context, productModel mode
 		Name:      productModel.Name,
 		Price:     productModel.Price,
 		Quantity:  productModel.Quantity,
+		Category:  productModel.Category,
 		ImagePath: imagePath,
 		Owner:     entity.User{Username: username},
 	}

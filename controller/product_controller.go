@@ -52,7 +52,7 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 
 	fmt.Println("DEBUG FORM:", name, priceStr, quantityStr, category)
 
-	if name == "" || priceStr == "" || quantityStr == "" {
+	if name == "" || priceStr == "" || quantityStr == "" || category == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
 			Code:    400,
 			Message: "Missing required fields",
@@ -60,6 +60,7 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 				{"field": "Name", "message": "this field is required"},
 				{"field": "Price", "message": "this field is required"},
 				{"field": "Quantity", "message": "this field is required"},
+				{"field": "Category", "message": "this field is required"},
 			},
 		})
 	}
