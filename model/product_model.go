@@ -9,6 +9,7 @@ type ProductModel struct {
 	Name      string `json:"name"`
 	Price     int64  `json:"price"`
 	Quantity  int32  `json:"quantity"`
+	Category  string `json:"category"`
 	ImagePath string `json:"image_path"`
 }
 
@@ -24,5 +25,6 @@ type ProductUpdateModel struct {
 	Name     *string               `form:"name"`
 	Price    *int64                `form:"price"`
 	Quantity *int32                `form:"quantity"`
+	Category *string               `form:"category"`
 	Image    *multipart.FileHeader `form:"image"`
 }
