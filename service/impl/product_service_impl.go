@@ -155,6 +155,7 @@ func (service *productServiceImpl) FindAll(ctx context.Context) (responses []mod
 			Name:      product.Name,
 			Price:     product.Price,
 			Quantity:  product.Quantity,
+			Category:  product.Category,
 			ImagePath: product.ImagePath,
 		})
 	}
