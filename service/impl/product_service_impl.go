@@ -174,6 +174,7 @@ func (service *productServiceImpl) FindByUsername(ctx context.Context, username 
 			Name:      product.Name,
 			Price:     product.Price,
 			Quantity:  product.Quantity,
+			Category:  product.Category,
 			ImagePath: product.ImagePath,
 		})
 	}
