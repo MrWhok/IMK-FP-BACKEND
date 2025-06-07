@@ -74,3 +74,9 @@ func (r *userRepositoryImpl) FindByUsername(ctx context.Context, username string
 func (r *userRepositoryImpl) Update(ctx context.Context, user entity.User) error {
 	return r.DB.WithContext(ctx).Save(&user).Error
 }
+
+func (r *userRepositoryImpl) FindAllOrderedByPoints(ctx context.Context) ([]entity.User, error) {
+	var users []entity.User
+	result := r.DB.WithContext(ctx).Order("points DESC").Find(&users)
+	return users, result.Error
+}

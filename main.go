@@ -43,7 +43,9 @@ func main() {
 		&entity.Cart{},
 		&entity.CartItem{},
 		&entity.Transaction{},
-		&entity.TransactionDetail{})
+		&entity.TransactionDetail{},
+		&entity.Gift{},
+	)
 
 	// database.AutoMigrate(&entity.Cart{})
 	// database.AutoMigrate(&entity.User{})
@@ -63,6 +65,7 @@ func main() {
 	userRepository := repository.NewUserRepositoryImpl(database)
 	cartRepository := repository.NewCartRepositoryImpl(database)
 	newsRepository := repository.NewFileNewsRepo("data/cache.json")
+	giftRepository := repository.NewGiftRepositoryImpl(database)
 
 	//rest client
 	httpBinRestClient := restclient.NewHttpBinRestClient()
@@ -75,6 +78,7 @@ func main() {
 	httpBinService := service.NewHttpBinServiceImpl(&httpBinRestClient)
 	cartService := service.NewCartServiceImpl(cartRepository, productRepository)
 	newsService := service.NewNewsServiceImpl(newsRepository)
+	giftService := service.NewGiftServiceImpl(&giftRepository, redis)
 
 	//controller
 	productController := controller.NewProductController(&productService, config)
@@ -84,6 +88,7 @@ func main() {
 	httpBinController := controller.NewHttpBinController(&httpBinService)
 	cartController := controller.NewCartController(&cartService, config)
 	newsController := controller.NewNewsController(&newsService)
+	giftController := controller.NewGiftController(&giftService, config)
 
 	//setup fiber
 	app := fiber.New(configuration.NewFiberConfiguration())
@@ -109,6 +114,7 @@ func main() {
 	httpBinController.Route(app)
 	cartController.Route(app)
 	newsController.Route(app)
+	giftController.Route(app)
 
 	//swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)
