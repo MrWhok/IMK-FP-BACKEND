@@ -20,7 +20,7 @@ func ScrapNews() ([]model.News, error) {
 		ImageSelector   string
 	}{
 		{"CNN Indonesia", "www.cnnindonesia.com", "https://www.cnnindonesia.com/tag/daur-ulang-sampah", "article", "h2", "a", "img"},
-		// nanti tambah sumber lain
+		{"Detik.com", "www.detik.com", "https://www.detik.com/tag/daur-ulang-sampah", "article", "h2", "a", "img"},
 	}
 
 	for _, portal := range portals {
