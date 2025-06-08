@@ -137,6 +137,7 @@ func (service *productServiceImpl) FindById(ctx context.Context, id string) mode
 		Name:      productCache.Name,
 		Price:     productCache.Price,
 		Quantity:  productCache.Quantity,
+		Category:  productCache.Category,
 		ImagePath: productCache.ImagePath,
 	}
 }
