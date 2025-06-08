@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
-	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/middleware"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
@@ -122,10 +121,47 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 // @Security JWT
 // @Router /v1/api/product/{id} [put]
 func (controller ProductController) Update(c *fiber.Ctx) error {
-	var request model.ProductUpdateModel
 	id := c.Params("id")
-	err := c.BodyParser(&request)
-	exception.PanicLogging(err)
+	// err := c.BodyParser(&request)
+	// exception.PanicLogging(err)
+	name := c.FormValue("name")
+	priceStr := c.FormValue("price")
+	quantityStr := c.FormValue("quantity")
+	category := c.FormValue("category")
+
+	if name == "" || priceStr == "" || quantityStr == "" || category == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: "Missing required fields",
+			Data: []map[string]string{
+				{"field": "Name", "message": "this field is required"},
+				{"field": "Price", "message": "this field is required"},
+				{"field": "Quantity", "message": "this field is required"},
+				{"field": "Category", "message": "this field is required"},
+			},
+		})
+	}
+
+	price, err := strconv.ParseInt(priceStr, 10, 64)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code: 400, Message: "Format harga tidak valid.",
+		})
+	}
+
+	quantity64, err := strconv.ParseInt(quantityStr, 10, 32)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code: 400, Message: "Format jumlah tidak valid.",
+		})
+	}
+
+	request := model.ProductUpdateModel{
+		Name:     name,
+		Price:    price,
+		Quantity: int32(quantity64),
+		Category: category,
+	}
 
 	file, err := c.FormFile("image")
 	if err != nil {

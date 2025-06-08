@@ -53,16 +53,10 @@ func (service *productServiceImpl) Update(ctx context.Context, productModel mode
 		panic(exception.NotFoundError{Message: err.Error()})
 	}
 
-	// Update field dasar
-	if productModel.Name != nil {
-		existingProduct.Name = *productModel.Name
-	}
-	if productModel.Price != nil {
-		existingProduct.Price = *productModel.Price
-	}
-	if productModel.Quantity != nil {
-		existingProduct.Quantity = *productModel.Quantity
-	}
+	existingProduct.Name = productModel.Name
+	existingProduct.Price = productModel.Price
+	existingProduct.Quantity = productModel.Quantity
+	existingProduct.Category = productModel.Category
 
 	// Jika ada image baru
 	if productModel.Image != nil {

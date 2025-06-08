@@ -22,9 +22,9 @@ type ProductCreateModel struct {
 }
 
 type ProductUpdateModel struct {
-	Name     *string               `form:"name"`
-	Price    *int64                `form:"price"`
-	Quantity *int32                `form:"quantity"`
-	Category *string               `form:"category"`
+	Name     string                `form:"name"`
+	Price    int64                 `form:"price"`
+	Quantity int32                 `form:"quantity"`
+	Category string                `form:"category"`
 	Image    *multipart.FileHeader `form:"image"`
 }
