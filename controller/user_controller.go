@@ -47,7 +47,17 @@ func (controller UserController) Authentication(c *fiber.Ctx) error {
 			"role": userRole.Role,
 		})
 	}
-	tokenJwtResult := common.GenerateToken(result.Username, userRoles, controller.Config)
+	tokenJwtResult, expirationTime := common.GenerateToken(result.Username, userRoles, controller.Config)
+
+	cookie := new(fiber.Cookie)
+	cookie.Name = "token"
+	cookie.Value = tokenJwtResult
+	cookie.Expires = expirationTime
+	cookie.HTTPOnly = true
+	cookie.Path = "/"
+
+	c.Cookie(cookie)
+
 	resultWithToken := map[string]interface{}{
 		"token":    tokenJwtResult,
 		"username": result.Username,
