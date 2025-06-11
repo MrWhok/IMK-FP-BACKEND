@@ -33,13 +33,28 @@ func (s *cartServiceImpl) AddToCart(ctx context.Context, username string, reques
 
 	cart, _ := s.cartRepo.FindOrCreateCartByUsername(ctx, username)
 
-	item := entity.CartItem{
+	existingItem, err := s.cartRepo.FindItemByUsernameAndProductID(ctx, username, request.ProductID)
+	if err == nil {
+		// Update quantity
+		existingItem.Quantity += request.Quantity
+		s.cartRepo.UpdateItem(ctx, existingItem)
+
+		return model.AddToCartResponse{
+			ItemID:      existingItem.ID,
+			CartID:      cart.ID,
+			ProductID:   product.Id.String(),
+			ProductName: product.Name,
+			Quantity:    existingItem.Quantity,
+		}
+	}
+
+	// Insert new item
+	newItem := entity.CartItem{
 		CartID:    cart.ID,
 		ProductID: request.ProductID,
 		Quantity:  request.Quantity,
 	}
-
-	result := s.cartRepo.AddToCartItem(ctx, item)
+	result := s.cartRepo.AddToCartItem(ctx, newItem)
 
 	return model.AddToCartResponse{
 		ItemID:      result.ID,

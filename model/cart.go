@@ -1,8 +1,8 @@
 package model
 
 type AddToCartRequest struct {
-	ProductID string `json:"product_id" validate:"required,uuid4"`
-	Quantity  int32  `json:"quantity" validate:"required,min=1"`
+	ProductID string `json:"-"`
+	Quantity  int32  `json:"quantity"`
 }
 
 type AddToCartResponse struct {

@@ -23,7 +23,7 @@ func NewCartController(cartService *service.CartService, config configuration.Co
 func (cartController CartController) Route(app *fiber.App) {
 	cartGroup := app.Group("/v1/api/cart")
 
-	cartGroup.Post("/add", middleware.AuthenticateJWT("user", cartController.Config), cartController.AddToCart)
+	cartGroup.Post("/add/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.AddToCart)
 	cartGroup.Get("/", middleware.AuthenticateJWT("user", cartController.Config), cartController.GetMyCart)
 	cartGroup.Put("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.UpdateCartItem)
 	cartGroup.Delete("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.DeleteCartItem)
@@ -34,9 +34,19 @@ func (c *CartController) AddToCart(ctx *fiber.Ctx) error {
 
 	username := ctx.Locals("username").(string)
 
-	var req model.AddToCartRequest
-	err := ctx.BodyParser(&req)
-	exception.PanicLogging(err)
+	productID := ctx.Params("product_id")
+	if productID == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: "Product ID is required",
+		})
+	}
+
+	// Always add quantity = 1
+	req := model.AddToCartRequest{
+		ProductID: productID,
+		Quantity:  1,
+	}
 
 	response := c.CartService.AddToCart(ctx.Context(), username, req)
 	return ctx.Status(fiber.StatusOK).JSON(model.GeneralResponse{
