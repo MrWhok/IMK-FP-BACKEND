@@ -98,3 +98,18 @@ func (s *cartServiceImpl) UpdateCartItem(ctx context.Context, username string, p
 func (s *cartServiceImpl) DeleteCartItem(ctx context.Context, username string, productID string) {
 	s.cartRepo.DeleteItem(ctx, username, productID)
 }
+
+func (s *cartServiceImpl) SubstractFromCart(ctx context.Context, username string, productID string) {
+	cartItem, err := s.cartRepo.FindItemByUsernameAndProductID(ctx, username, productID)
+	if err != nil {
+		panic(exception.NotFoundError{Message: "Cart item not found"})
+	}
+
+	if cartItem.Quantity <= 1 {
+		s.cartRepo.DeleteItem(ctx, username, productID)
+		return
+	}
+
+	cartItem.Quantity -= 1
+	s.cartRepo.UpdateItem(ctx, cartItem)
+}

@@ -11,4 +11,5 @@ type CartService interface {
 	GetMyCart(ctx context.Context, username string) model.CartItemFinalResponse
 	UpdateCartItem(ctx context.Context, username string, productID string, req model.UpdateCartRequest)
 	DeleteCartItem(ctx context.Context, username string, productID string)
+	SubstractFromCart(ctx context.Context, username string, productID string)
 }

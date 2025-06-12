@@ -27,6 +27,7 @@ func (cartController CartController) Route(app *fiber.App) {
 	cartGroup.Get("/", middleware.AuthenticateJWT("user", cartController.Config), cartController.GetMyCart)
 	cartGroup.Put("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.UpdateCartItem)
 	cartGroup.Delete("/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.DeleteCartItem)
+	cartGroup.Put("/sub/:product_id", middleware.AuthenticateJWT("user", cartController.Config), cartController.SubstractCartItem)
 }
 
 func (c *CartController) AddToCart(ctx *fiber.Ctx) error {
@@ -90,5 +91,17 @@ func (c *CartController) DeleteCartItem(ctx *fiber.Ctx) error {
 	return ctx.JSON(model.GeneralResponse{
 		Code:    200,
 		Message: "Cart item deleted",
+	})
+}
+
+func (c *CartController) SubstractCartItem(ctx *fiber.Ctx) error {
+	username := ctx.Locals("username").(string)
+	productID := ctx.Params("product_id")
+
+	c.CartService.SubstractFromCart(ctx.Context(), username, productID)
+
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Cart item subtracted",
 	})
 }
