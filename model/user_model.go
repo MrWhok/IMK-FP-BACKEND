@@ -20,7 +20,9 @@ type UserCreateModel struct {
 }
 
 type UserLeaderboardModel struct {
-	Rank     int    `json:"rank"`
-	Username string `json:"username"`
-	Points   int32  `json:"points"`
+	Rank      int    `json:"rank"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Points    int32  `json:"points"`
 }

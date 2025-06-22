@@ -93,9 +93,11 @@ func (s *userServiceImpl) GetLeaderboard(ctx context.Context) ([]model.UserLeade
 	var leaderboard []model.UserLeaderboardModel
 	for i, user := range users {
 		leaderboard = append(leaderboard, model.UserLeaderboardModel{
-			Rank:     i + 1,
-			Username: user.Username,
-			Points:   user.Points,
+			Rank:      i + 1,
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Username:  user.Username,
+			Points:    user.Points,
 		})
 	}
 
