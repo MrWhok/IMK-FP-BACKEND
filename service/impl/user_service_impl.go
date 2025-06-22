@@ -72,6 +72,15 @@ func (u *userServiceImpl) FindMe(ctx context.Context, username string) (model.Us
 		userRoles = append(userRoles, userRole.Role)
 	}
 
+	users, _ := u.UserRepository.FindAllOrderedByPoints(ctx)
+	rank := 0
+	for i, user := range users {
+		if user.Username == username {
+			rank = i + 1
+			break
+		}
+	}
+
 	return model.UserCreateModel{
 		Username:  usernameResult.Username,
 		FirstName: usernameResult.FirstName,
@@ -81,6 +90,7 @@ func (u *userServiceImpl) FindMe(ctx context.Context, username string) (model.Us
 		Address:   usernameResult.Address,
 		Roles:     userRoles,
 		Points:    usernameResult.Points,
+		Rank:      rank,
 	}, nil
 }
 
