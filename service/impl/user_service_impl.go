@@ -113,3 +113,27 @@ func (s *userServiceImpl) GetLeaderboard(ctx context.Context) ([]model.UserLeade
 
 	return leaderboard, nil
 }
+
+func (s *userServiceImpl) UpdateProfile(ctx context.Context, username string, model model.UserUpdateModel) error {
+	user, err := s.UserRepository.Authentication(ctx, username)
+	if err != nil {
+		return fmt.Errorf("user not found")
+	}
+
+	if model.Email != "" {
+		user.Email = model.Email
+	}
+	if model.Phone != "" {
+		user.Phone = model.Phone
+	}
+	if model.Address != "" {
+		user.Address = model.Address
+	}
+
+	err = s.UserRepository.UpdateProfile(ctx, user.Username, user.Email, user.Phone, user.Address)
+	if err != nil {
+		return fmt.Errorf("failed to update user profile: %v", err)
+	}
+
+	return nil
+}

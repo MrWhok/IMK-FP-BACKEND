@@ -24,6 +24,7 @@ func (controller UserController) Route(app *fiber.App) {
 	app.Post("/v1/api/register", controller.Register)
 	app.Get("/v1/api/me", middleware.AuthenticateJWT("user", controller.Config), controller.Me)
 	app.Get("/v1/api/leaderboard", middleware.AuthenticateJWT("user", controller.Config), controller.Leaderboard)
+	app.Put("/v1/api/update-profile", middleware.AuthenticateJWT("user", controller.Config), controller.UpdateProfile)
 }
 
 // Authentication func Authenticate user.
@@ -129,5 +130,34 @@ func (controller UserController) Leaderboard(c *fiber.Ctx) error {
 		Code:    200,
 		Message: "Success",
 		Data:    leaderboard,
+	})
+}
+
+func (controller UserController) UpdateProfile(c *fiber.Ctx) error {
+	var request model.UserUpdateModel
+	err := c.BodyParser(&request)
+	exception.PanicLogging(err)
+
+	usernameInterface := c.Locals("username")
+	username, ok := usernameInterface.(string)
+	if !ok || username == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(model.GeneralResponse{
+			Code:    401,
+			Message: "Unauthorized",
+			Data:    "Invalid or missing user",
+		})
+	}
+
+	err = controller.UserService.UpdateProfile(c.Context(), username, request)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Profile updated successfully",
 	})
 }

@@ -27,3 +27,9 @@ type UserLeaderboardModel struct {
 	LastName  string `json:"last_name"`
 	Points    int32  `json:"points"`
 }
+
+type UserUpdateModel struct {
+	Email   string `json:"email,omitempty"`
+	Phone   string `json:"phone,omitempty"`
+	Address string `json:"address,omitempty"`
+}

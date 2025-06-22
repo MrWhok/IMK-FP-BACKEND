@@ -12,4 +12,5 @@ type UserService interface {
 	Register(ctx context.Context, model model.UserCreateModel) error
 	FindMe(ctx context.Context, username string) (model.UserCreateModel, error)
 	GetLeaderboard(ctx context.Context) ([]model.UserLeaderboardModel, error)
+	UpdateProfile(ctx context.Context, username string, model model.UserUpdateModel) error
 }

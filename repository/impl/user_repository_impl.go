@@ -75,6 +75,26 @@ func (r *userRepositoryImpl) Update(ctx context.Context, user entity.User) error
 	return r.DB.WithContext(ctx).Save(&user).Error
 }
 
+func (r *userRepositoryImpl) UpdateProfile(ctx context.Context, username string, email string, phone string, address string) error {
+	result := r.DB.Model(&entity.User{}).
+		Where("username = ?", username).
+		Updates(map[string]interface{}{
+			"email":   email,
+			"phone":   phone,
+			"address": address,
+		})
+
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return errors.New("no rows updated")
+	}
+
+	return nil
+}
+
 func (r *userRepositoryImpl) FindAllOrderedByPoints(ctx context.Context) ([]entity.User, error) {
 	var users []entity.User
 	result := r.DB.WithContext(ctx).Order("points DESC").Find(&users)
