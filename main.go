@@ -119,6 +119,9 @@ func main() {
 	//swagger
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
+	// media
+	app.Static("/media", "./media")
+
 	//start app
 	err = app.Listen(config.Get("SERVER.PORT"))
 	exception.PanicLogging(err)
