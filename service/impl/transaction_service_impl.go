@@ -251,6 +251,7 @@ func (transactionService *transactionServiceImpl) FindByUsername(ctx context.Con
 		responses = append(responses, model.TransactionModel{
 			Id:                 transaction.Id.String(),
 			TotalPrice:         transaction.TotalPrice,
+			Status:             transaction.Status,
 			TransactionDetails: transactionDetails,
 		})
 	}
@@ -282,6 +283,7 @@ func (transactionService *transactionServiceImpl) FindByBuyerUsername(ctx contex
 		responses = append(responses, model.TransactionModel{
 			Id:                 transaction.Id.String(),
 			TotalPrice:         transaction.TotalPrice,
+			Status:             transaction.Status,
 			TransactionDetails: transactionDetails,
 		})
 	}
