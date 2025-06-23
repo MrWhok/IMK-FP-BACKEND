@@ -290,3 +290,11 @@ func (transactionService *transactionServiceImpl) FindByBuyerUsername(ctx contex
 
 	return responses
 }
+
+func (transactionService *transactionServiceImpl) UpdateStatus(ctx context.Context, id string, status string) error {
+	err := transactionService.TransactionRepository.UpdateStatus(ctx, id, status)
+	if err != nil {
+		return exception.NotFoundError{Message: "Transaction not found with ID: " + id}
+	}
+	return nil
+}

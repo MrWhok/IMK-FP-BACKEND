@@ -13,4 +13,5 @@ type TransactionRepository interface {
 	FindAll(ctx context.Context) []entity.Transaction
 	FindByUsername(ctx context.Context, username string) []entity.Transaction
 	FindByBuyerUsername(ctx context.Context, username string) []entity.Transaction
+	UpdateStatus(ctx context.Context, id string, status string) error
 }

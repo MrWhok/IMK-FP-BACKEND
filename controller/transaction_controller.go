@@ -26,6 +26,7 @@ func (controller TransactionController) Route(app *fiber.App) {
 	transactionGroup.Get("/buyer", middleware.AuthenticateJWT("user", controller.Config), controller.FindByBuyerUsername)
 	transactionGroup.Delete("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Delete)
 	transactionGroup.Get("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
+	transactionGroup.Put("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.UpdateStatus)
 	transactionGroup.Get("", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
 	transactionGroup.Post("/checkout", middleware.AuthenticateJWT("user", controller.Config), controller.Checkout)
 }
@@ -139,5 +140,30 @@ func (controller TransactionController) FindByBuyerUsername(ctx *fiber.Ctx) erro
 		Code:    200,
 		Message: "Success",
 		Data:    result,
+	})
+}
+
+func (controller TransactionController) UpdateStatus(ctx *fiber.Ctx) error {
+	id := ctx.Params("id")
+	status := ctx.Query("status")
+
+	if status == "" {
+		return ctx.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: "Status is required",
+		})
+	}
+
+	err := controller.TransactionService.UpdateStatus(ctx.Context(), id, status)
+	if err != nil {
+		return ctx.Status(fiber.StatusNotFound).JSON(model.GeneralResponse{
+			Code:    404,
+			Message: err.Error(),
+		})
+	}
+
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Success",
 	})
 }

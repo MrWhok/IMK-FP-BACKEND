@@ -92,3 +92,19 @@ func (transactionRepository *transactionRepositoryImpl) FindByBuyerUsername(ctx 
 
 	return transactions
 }
+
+func (transactionRepository *transactionRepositoryImpl) UpdateStatus(ctx context.Context, id string, status string) error {
+	var _ entity.Transaction
+	result := transactionRepository.DB.WithContext(ctx).
+		Model(&entity.Transaction{}).
+		Where("transaction_id = ?", id).
+		Update("status", status)
+
+	if result.RowsAffected == 0 {
+		return errors.New("transaction Not Found")
+	}
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}

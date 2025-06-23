@@ -14,4 +14,5 @@ type TransactionService interface {
 	Checkout(ctx context.Context, username string) model.TransactionModel
 	FindByUsername(ctx context.Context, username string) []model.TransactionModel
 	FindByBuyerUsername(ctx context.Context, username string) []model.TransactionModel
+	UpdateStatus(ctx context.Context, id string, status string) error
 }
