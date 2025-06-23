@@ -23,11 +23,11 @@ func (controller TransactionController) Route(app *fiber.App) {
 
 	transactionGroup.Post("", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
 	transactionGroup.Get("/my", middleware.AuthenticateJWT("user", controller.Config), controller.FindByUsername)
+	transactionGroup.Get("/buyer", middleware.AuthenticateJWT("user", controller.Config), controller.FindByBuyerUsername)
 	transactionGroup.Delete("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Delete)
 	transactionGroup.Get("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
 	transactionGroup.Get("", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
 	transactionGroup.Post("/checkout", middleware.AuthenticateJWT("user", controller.Config), controller.Checkout)
-
 }
 
 // Create func create transaction.
@@ -125,6 +125,16 @@ func (controller TransactionController) Checkout(ctx *fiber.Ctx) error {
 func (controller TransactionController) FindByUsername(ctx *fiber.Ctx) error {
 	username := ctx.Locals("username").(string)
 	result := controller.TransactionService.FindByUsername(ctx.Context(), username)
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Success",
+		Data:    result,
+	})
+}
+
+func (controller TransactionController) FindByBuyerUsername(ctx *fiber.Ctx) error {
+	username := ctx.Locals("username").(string)
+	result := controller.TransactionService.FindByBuyerUsername(ctx.Context(), username)
 	return ctx.JSON(model.GeneralResponse{
 		Code:    200,
 		Message: "Success",

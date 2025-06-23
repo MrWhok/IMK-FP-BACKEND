@@ -257,3 +257,34 @@ func (transactionService *transactionServiceImpl) FindByUsername(ctx context.Con
 
 	return responses
 }
+
+func (transactionService *transactionServiceImpl) FindByBuyerUsername(ctx context.Context, username string) []model.TransactionModel {
+	transactions := transactionService.TransactionRepository.FindByBuyerUsername(ctx, username)
+	var responses []model.TransactionModel
+
+	for _, transaction := range transactions {
+		var transactionDetails []model.TransactionDetailModel
+		for _, detail := range transaction.TransactionDetails {
+			transactionDetails = append(transactionDetails, model.TransactionDetailModel{
+				Id:            detail.Id.String(),
+				SubTotalPrice: detail.SubTotalPrice,
+				Price:         detail.Price,
+				Quantity:      detail.Quantity,
+				Product: model.ProductModel{
+					Id:       detail.Product.Id.String(),
+					Name:     detail.Product.Name,
+					Price:    detail.Product.Price,
+					Quantity: detail.Product.Quantity,
+				},
+			})
+		}
+
+		responses = append(responses, model.TransactionModel{
+			Id:                 transaction.Id.String(),
+			TotalPrice:         transaction.TotalPrice,
+			TransactionDetails: transactionDetails,
+		})
+	}
+
+	return responses
+}

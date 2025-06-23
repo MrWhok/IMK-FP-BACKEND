@@ -13,4 +13,5 @@ type TransactionService interface {
 	FindAll(ctx context.Context) []model.TransactionModel
 	Checkout(ctx context.Context, username string) model.TransactionModel
 	FindByUsername(ctx context.Context, username string) []model.TransactionModel
+	FindByBuyerUsername(ctx context.Context, username string) []model.TransactionModel
 }

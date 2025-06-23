@@ -78,3 +78,17 @@ func (transactionRepository *transactionRepositoryImpl) FindByUsername(ctx conte
 
 	return transactions
 }
+
+func (transactionRepository *transactionRepositoryImpl) FindByBuyerUsername(ctx context.Context, username string) []entity.Transaction {
+	var transactions []entity.Transaction
+	transactionRepository.DB.WithContext(ctx).
+		Table("tb_transaction").
+		Select("tb_transaction.transaction_id, tb_transaction.total_price, tb_transaction.user_id").
+		Joins("join tb_user on tb_user.username = tb_transaction.user_id").
+		Where("tb_user.username = ?", username).
+		Preload("TransactionDetails").
+		Preload("TransactionDetails.Product").
+		Find(&transactions)
+
+	return transactions
+}
