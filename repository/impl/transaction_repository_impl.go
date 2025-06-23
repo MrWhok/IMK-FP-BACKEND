@@ -3,6 +3,7 @@ package impl
 import (
 	"context"
 	"errors"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/repository"
@@ -54,5 +55,26 @@ func (transactionRepository *transactionRepositoryImpl) FindAll(ctx context.Cont
 		Preload("TransactionDetails").
 		Preload("TransactionDetails.Product").
 		Find(&transactions)
+	return transactions
+}
+
+func (transactionRepository *transactionRepositoryImpl) FindByUsername(ctx context.Context, username string) []entity.Transaction {
+	var transactions []entity.Transaction
+	transactionRepository.DB.WithContext(ctx).
+		Table("tb_transaction").
+		Select("DISTINCT tb_transaction.transaction_id, tb_transaction.total_price").
+		Joins("join tb_transaction_detail on tb_transaction_detail.transaction_id = tb_transaction.transaction_id").
+		Joins("join tb_product on tb_product.product_id = tb_transaction_detail.product_id").
+		Joins("join tb_user on tb_user.username = tb_product.user_id").
+		Where("tb_user.username = ?", username).
+		Find(&transactions)
+
+	for i := range transactions {
+		transactionRepository.DB.WithContext(ctx).
+			Preload("TransactionDetails").
+			Preload("TransactionDetails.Product").
+			First(&transactions[i], transactions[i].Id)
+	}
+
 	return transactions
 }

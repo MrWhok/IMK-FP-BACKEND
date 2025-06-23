@@ -22,6 +22,7 @@ func (controller TransactionController) Route(app *fiber.App) {
 	transactionGroup := app.Group("/v1/api/transaction")
 
 	transactionGroup.Post("", middleware.AuthenticateJWT("user", controller.Config), controller.Create)
+	transactionGroup.Get("/my", middleware.AuthenticateJWT("user", controller.Config), controller.FindByUsername)
 	transactionGroup.Delete("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.Delete)
 	transactionGroup.Get("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
 	transactionGroup.Get("", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
@@ -117,6 +118,16 @@ func (controller TransactionController) Checkout(ctx *fiber.Ctx) error {
 	return ctx.JSON(model.GeneralResponse{
 		Code:    200,
 		Message: "Checkout success",
+		Data:    result,
+	})
+}
+
+func (controller TransactionController) FindByUsername(ctx *fiber.Ctx) error {
+	username := ctx.Locals("username").(string)
+	result := controller.TransactionService.FindByUsername(ctx.Context(), username)
+	return ctx.JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Success",
 		Data:    result,
 	})
 }
