@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/MrWhok/IMK-FP-BACKEND/common"
-	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
@@ -133,16 +132,16 @@ func (service *productServiceImpl) deleteProductImage(imagePath string) {
 }
 
 func (service *productServiceImpl) FindById(ctx context.Context, id string) model.ProductModel {
-	productCache := configuration.SetCache[entity.Product](service.Cache, ctx, "product", id, service.ProductRepository.FindById)
+	product, _ := service.ProductRepository.FindById(ctx, id)
 	return model.ProductModel{
-		Id:          productCache.Id.String(),
-		Name:        productCache.Name,
-		Price:       productCache.Price,
-		Quantity:    productCache.Quantity,
-		Category:    productCache.Category,
-		Description: productCache.Description,
-		Owner:       productCache.UserID,
-		ImagePath:   productCache.ImagePath,
+		Id:          product.Id.String(),
+		Name:        product.Name,
+		Price:       product.Price,
+		Quantity:    product.Quantity,
+		Category:    product.Category,
+		Description: product.Description,
+		Owner:       product.UserID,
+		ImagePath:   product.ImagePath,
 	}
 }
 
