@@ -136,7 +136,6 @@ func (transactionService *transactionServiceImpl) FindAll(ctx context.Context) (
 }
 
 func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) []model.TransactionModel {
-	// Get cart
 	cart, err := s.cartRepo.FindByUsername(ctx, username)
 	exception.PanicLogging(err)
 
@@ -144,21 +143,37 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 		panic(exception.NotFoundError{Message: "Cart is empty"})
 	}
 
-	// Group items by owner
+	// Ambil data pembeli
+	buyer, err := s.userRepo.FindByUsername(ctx, username)
+	exception.PanicLogging(err)
+
 	groupedItems := make(map[string][]entity.CartItem)
+	ownerEmails := make(map[string]string)
+	ownerPhone := make(map[string]string)
+
 	for _, item := range cart.Items {
 		product, err := s.productRepo.FindById(ctx, item.ProductID)
 		exception.PanicLogging(err)
 
-		groupedItems[product.Owner.Username] = append(groupedItems[product.Owner.Username], item)
+		ownerUsername := product.Owner.Username
+		groupedItems[ownerUsername] = append(groupedItems[ownerUsername], item)
+		ownerEmails[ownerUsername] = product.Owner.Email
+		ownerPhone[ownerUsername] = product.Owner.Phone
 	}
 
 	var transactionResponses []model.TransactionModel
-	var emailContent strings.Builder
 
-	emailContent.WriteString("Thank you for your purchase!Please contact the seller for more information\n\nHere are your items:\n\n")
+	// Buat map untuk email ke owner
+	ownerEmailMessages := make(map[string]*strings.Builder)
+	for owner := range groupedItems {
+		ownerEmailMessages[owner] = &strings.Builder{}
+		ownerEmailMessages[owner].WriteString(fmt.Sprintf("Dear %s,\n\nThese are the items purchased from you:\n", owner))
+	}
 
-	for _, items := range groupedItems {
+	var buyerEmailContent strings.Builder
+	buyerEmailContent.WriteString("Thank you for your purchase! Please contact the seller via WhatsApp:\n\n")
+
+	for owner, items := range groupedItems {
 		transactionId := uuid.New()
 		var total int64
 		var details []entity.TransactionDetail
@@ -166,10 +181,7 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 
 		for _, item := range items {
 			subTotal := int64(item.Quantity) * item.Product.Price
-			productUUID, err := uuid.Parse(item.ProductID)
-			if err != nil {
-				panic("invalid ProductID: " + item.ProductID)
-			}
+			productUUID, _ := uuid.Parse(item.ProductID)
 
 			productEntity, err := s.productRepo.FindById(ctx, item.ProductID)
 			exception.PanicLogging(err)
@@ -177,7 +189,6 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 			if productEntity.Quantity < item.Quantity {
 				panic(exception.BadRequestError{Message: "Insufficient stock for product: " + productEntity.Name})
 			}
-
 			productEntity.Quantity -= item.Quantity
 			s.productRepo.Update(ctx, productEntity)
 
@@ -192,11 +203,13 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 			details = append(details, detail)
 			total += subTotal
 
-			// Prepare email line
-			emailContent.WriteString(fmt.Sprintf("- %s (Seller: %s, WhatsApp: https://wa.me/%s)\n",
-				productEntity.Name, productEntity.Owner.Username, productEntity.Owner.Phone))
+			// Tambahkan ke email owner
+			ownerEmailMessages[owner].WriteString(fmt.Sprintf("- %s x%d\n", productEntity.Name, item.Quantity))
 
-			// Prepare response model
+			// Tambahkan ke email buyer
+			buyerEmailContent.WriteString(fmt.Sprintf("- %s (Seller: %s, WA: https://wa.me/%s)\n",
+				productEntity.Name, owner, productEntity.Owner.Phone))
+
 			detailModels = append(detailModels, model.TransactionDetailModel{
 				Id:            detail.Id.String(),
 				SubTotalPrice: detail.SubTotalPrice,
@@ -231,22 +244,28 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 		})
 	}
 
-	// Add points
-	user, err := s.userRepo.FindByUsername(ctx, username)
-	exception.PanicLogging(err)
-	user.Points += 10
-	err = s.userRepo.Update(ctx, user)
-	exception.PanicLogging(err)
+	// Tambahkan poin ke pembeli
+	buyer.Points += 10
+	s.userRepo.Update(ctx, buyer)
 
-	// Clear cart
+	// Hapus cart
 	for _, item := range cart.Items {
 		s.cartRepo.DeleteItem(ctx, username, item.ProductID)
 	}
 
-	// Send email
-	err = utils.SendEmail(user.Email, "Transaction Confirmation", emailContent.String())
+	// Kirim email ke pembeli
+	err = utils.SendEmail(buyer.Email, "Transaction Confirmation", buyerEmailContent.String())
 	if err != nil {
-		fmt.Println("Failed to send email:", err)
+		fmt.Println("Failed to send email to buyer:", err)
+	}
+
+	// Kirim email ke owner
+	for owner, builder := range ownerEmailMessages {
+		builder.WriteString(fmt.Sprintf("\nBuyer's contact: %s (WA: https://wa.me/%s)\n", buyer.Username, buyer.Phone))
+		err := utils.SendEmail(ownerEmails[owner], "New Purchase Notification", builder.String())
+		if err != nil {
+			fmt.Println("Failed to send email to owner:", owner, err)
+		}
 	}
 
 	return transactionResponses
