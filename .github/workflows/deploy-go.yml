@@ -39,5 +39,5 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           port: ${{ secrets.PORT }}
-          source: "app-binary-name"
+          source: "backend"
           target: "/home/${{ secrets.USERNAME }}/app"
