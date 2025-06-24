@@ -12,4 +12,5 @@ type GiftService interface {
 	Delete(ctx context.Context, id string) error
 	FindById(ctx context.Context, id string) model.GiftModel
 	FindAll(ctx context.Context) []model.GiftModel
+	ExchangeGift(ctx context.Context, giftId string, username string) error
 }

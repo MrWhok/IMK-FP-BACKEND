@@ -30,6 +30,7 @@ func (controller GiftController) Route(app *fiber.App) {
 	giftGroup.Delete("/:id", middleware.AuthenticateJWT("admin", controller.Config), controller.Delete)
 	giftGroup.Get("/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
 	giftGroup.Get("", middleware.AuthenticateJWT("user", controller.Config), controller.FindAll)
+	giftGroup.Post("/:giftId/exchange", middleware.AuthenticateJWT("user", controller.Config), controller.ExchangeGift)
 }
 
 func (controller GiftController) Create(c *fiber.Ctx) error {
@@ -144,5 +145,23 @@ func (controller GiftController) FindAll(c *fiber.Ctx) error {
 		Code:    200,
 		Message: "Success",
 		Data:    result,
+	})
+}
+
+func (controller GiftController) ExchangeGift(c *fiber.Ctx) error {
+	giftId := c.Params("giftId")
+	username := c.Locals("username").(string)
+
+	err := controller.GiftService.ExchangeGift(c.Context(), giftId, username)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
+			Code:    400,
+			Message: err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.GeneralResponse{
+		Code:    200,
+		Message: "Gift exchanged successfully",
 	})
 }

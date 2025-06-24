@@ -12,4 +12,5 @@ type GiftRepository interface {
 	Delete(ctx context.Context, gift entity.Gift)
 	FindById(ctx context.Context, id string) (entity.Gift, error)
 	FindAll(ctx context.Context) []entity.Gift
+	ExchangeGift(ctx context.Context, giftId string, username string) error
 }

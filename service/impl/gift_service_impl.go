@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/MrWhok/IMK-FP-BACKEND/common"
-	"github.com/MrWhok/IMK-FP-BACKEND/configuration"
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
@@ -133,13 +132,13 @@ func (service *giftServiceImpl) deleteGiftImage(imagePath string) {
 }
 
 func (service *giftServiceImpl) FindById(ctx context.Context, id string) model.GiftModel {
-	giftCache := configuration.SetCache[entity.Gift](service.Cache, ctx, "gift", id, service.GiftRepository.FindById)
+	gift, _ := service.GiftRepository.FindById(ctx, id)
 	return model.GiftModel{
-		Id:         giftCache.Id.String(),
-		Name:       giftCache.Name,
-		PointPrice: giftCache.PointPrice,
-		Quantity:   giftCache.Quantity,
-		ImagePath:  giftCache.ImagePath,
+		Id:         gift.Id.String(),
+		Name:       gift.Name,
+		PointPrice: gift.PointPrice,
+		Quantity:   gift.Quantity,
+		ImagePath:  gift.ImagePath,
 	}
 }
 
@@ -158,4 +157,13 @@ func (service *giftServiceImpl) FindAll(ctx context.Context) (responses []model.
 		return []model.GiftModel{}
 	}
 	return responses
+}
+
+func (service *giftServiceImpl) ExchangeGift(ctx context.Context, giftId string, username string) error {
+	err := service.GiftRepository.ExchangeGift(ctx, giftId, username)
+	if err != nil {
+		panic(exception.InternalServerError{Message: err.Error()})
+	}
+
+	return nil
 }
