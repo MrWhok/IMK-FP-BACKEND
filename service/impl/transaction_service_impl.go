@@ -221,3 +221,75 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 		TransactionDetails: detailModels,
 	}
 }
+
+func (transactionService *transactionServiceImpl) FindByUsername(ctx context.Context, username string) []model.TransactionModel {
+	transactions := transactionService.TransactionRepository.FindByUsername(ctx, username)
+	var responses []model.TransactionModel
+
+	for _, transaction := range transactions {
+		var transactionDetails []model.TransactionDetailModel
+		for _, detail := range transaction.TransactionDetails {
+			transactionDetails = append(transactionDetails, model.TransactionDetailModel{
+				Id:            detail.Id.String(),
+				SubTotalPrice: detail.SubTotalPrice,
+				Price:         detail.Price,
+				Quantity:      detail.Quantity,
+				Product: model.ProductModel{
+					Id:       detail.Product.Id.String(),
+					Name:     detail.Product.Name,
+					Price:    detail.Product.Price,
+					Quantity: detail.Product.Quantity,
+				},
+			})
+		}
+
+		responses = append(responses, model.TransactionModel{
+			Id:                 transaction.Id.String(),
+			TotalPrice:         transaction.TotalPrice,
+			Status:             transaction.Status,
+			TransactionDetails: transactionDetails,
+		})
+	}
+
+	return responses
+}
+
+func (transactionService *transactionServiceImpl) FindByBuyerUsername(ctx context.Context, username string) []model.TransactionModel {
+	transactions := transactionService.TransactionRepository.FindByBuyerUsername(ctx, username)
+	var responses []model.TransactionModel
+
+	for _, transaction := range transactions {
+		var transactionDetails []model.TransactionDetailModel
+		for _, detail := range transaction.TransactionDetails {
+			transactionDetails = append(transactionDetails, model.TransactionDetailModel{
+				Id:            detail.Id.String(),
+				SubTotalPrice: detail.SubTotalPrice,
+				Price:         detail.Price,
+				Quantity:      detail.Quantity,
+				Product: model.ProductModel{
+					Id:       detail.Product.Id.String(),
+					Name:     detail.Product.Name,
+					Price:    detail.Product.Price,
+					Quantity: detail.Product.Quantity,
+				},
+			})
+		}
+
+		responses = append(responses, model.TransactionModel{
+			Id:                 transaction.Id.String(),
+			TotalPrice:         transaction.TotalPrice,
+			Status:             transaction.Status,
+			TransactionDetails: transactionDetails,
+		})
+	}
+
+	return responses
+}
+
+func (transactionService *transactionServiceImpl) UpdateStatus(ctx context.Context, id string, status string) error {
+	err := transactionService.TransactionRepository.UpdateStatus(ctx, id, status)
+	if err != nil {
+		return exception.NotFoundError{Message: "Transaction not found with ID: " + id}
+	}
+	return nil
+}

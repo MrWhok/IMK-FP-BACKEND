@@ -4,12 +4,14 @@ import "github.com/google/uuid"
 
 type TransactionModel struct {
 	Id                 string                   `json:"id"`
+	Status             string                   `json:"status"`
 	TotalPrice         int64                    `json:"total_price"`
 	TransactionDetails []TransactionDetailModel `json:"transaction_details"`
 }
 
 type TransactionCreateUpdateModel struct {
 	Id                 string                               `json:"id"`
+	Status             string                               `json:"status"`
 	TotalPrice         int64                                `json:"total_price"`
 	TransactionDetails []TransactionDetailCreateUpdateModel `json:"transaction_details"`
 }

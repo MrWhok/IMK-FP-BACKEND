@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
 )
 
@@ -10,4 +11,7 @@ type TransactionRepository interface {
 	Delete(ctx context.Context, transaction entity.Transaction)
 	FindById(ctx context.Context, id string) (entity.Transaction, error)
 	FindAll(ctx context.Context) []entity.Transaction
+	FindByUsername(ctx context.Context, username string) []entity.Transaction
+	FindByBuyerUsername(ctx context.Context, username string) []entity.Transaction
+	UpdateStatus(ctx context.Context, id string, status string) error
 }

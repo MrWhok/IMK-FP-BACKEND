@@ -27,7 +27,7 @@ func (repository *productRepositoryImpl) Insert(ctx context.Context, product ent
 }
 
 func (repository *productRepositoryImpl) Update(ctx context.Context, product entity.Product) entity.Product {
-	err := repository.DB.WithContext(ctx).Where("product_id = ?", product.Id).Updates(&product).Error
+	err := repository.DB.WithContext(ctx).Where("product_id = ?", product.Id).Select("Name", "Price", "Quantity", "Category", "ImagePath", "UserID").Updates(&product).Error
 	exception.PanicLogging(err)
 	return product
 }
