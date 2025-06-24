@@ -13,6 +13,7 @@ type ProductModel struct {
 	Description string `json:"description"`
 	ImagePath   string `json:"image_path"`
 	Owner       string `json:"owner"`
+	OwnerPhone  string `json:"owner_phone"`
 }
 
 type ProductCreateModel struct {

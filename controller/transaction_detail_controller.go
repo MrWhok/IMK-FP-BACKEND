@@ -21,16 +21,6 @@ func (controller TransactionDetailController) Route(app *fiber.App) {
 	app.Get("/v1/api/transaction-detail/:id", middleware.AuthenticateJWT("user", controller.Config), controller.FindById)
 }
 
-// FindById func gets one exists transaction detail.
-// @Description Get one exists transaction detail.
-// @Summary get one exists transaction detail
-// @Tags Transaction Detail
-// @Accept json
-// @Produce json
-// @Param id path string true "Transaction Detail Id"
-// @Success 200 {object} model.GeneralResponse
-// @Security JWT
-// @Router /v1/api/transaction-detail/{id} [get]
 func (controller TransactionDetailController) FindById(c *fiber.Ctx) error {
 	id := c.Params("id")
 

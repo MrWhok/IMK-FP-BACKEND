@@ -2,6 +2,8 @@ package impl
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/MrWhok/IMK-FP-BACKEND/common"
 	"github.com/MrWhok/IMK-FP-BACKEND/entity"
@@ -9,6 +11,7 @@ import (
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/repository"
 	"github.com/MrWhok/IMK-FP-BACKEND/service"
+	"github.com/MrWhok/IMK-FP-BACKEND/utils"
 	"github.com/google/uuid"
 )
 
@@ -151,11 +154,15 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 	}
 
 	var transactionResponses []model.TransactionModel
+	var emailContent strings.Builder
+
+	emailContent.WriteString("Thank you for your purchase!Please contact the seller for more information\n\nHere are your items:\n\n")
 
 	for _, items := range groupedItems {
 		transactionId := uuid.New()
 		var total int64
 		var details []entity.TransactionDetail
+		var detailModels []model.TransactionDetailModel
 
 		for _, item := range items {
 			subTotal := int64(item.Quantity) * item.Product.Price
@@ -174,15 +181,37 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 			productEntity.Quantity -= item.Quantity
 			s.productRepo.Update(ctx, productEntity)
 
-			details = append(details, entity.TransactionDetail{
+			detail := entity.TransactionDetail{
 				Id:            uuid.New(),
 				TransactionId: transactionId,
 				ProductId:     productUUID,
 				Price:         item.Product.Price,
 				Quantity:      item.Quantity,
 				SubTotalPrice: subTotal,
-			})
+			}
+			details = append(details, detail)
 			total += subTotal
+
+			// Prepare email line
+			emailContent.WriteString(fmt.Sprintf("- %s (Seller: %s, WhatsApp: https://wa.me/%s)\n",
+				productEntity.Name, productEntity.Owner.Username, productEntity.Owner.Phone))
+
+			// Prepare response model
+			detailModels = append(detailModels, model.TransactionDetailModel{
+				Id:            detail.Id.String(),
+				SubTotalPrice: detail.SubTotalPrice,
+				Price:         detail.Price,
+				Quantity:      detail.Quantity,
+				Product: model.ProductModel{
+					Id:         productEntity.Id.String(),
+					Name:       productEntity.Name,
+					Price:      productEntity.Price,
+					Quantity:   productEntity.Quantity,
+					ImagePath:  productEntity.ImagePath,
+					Owner:      productEntity.Owner.Username,
+					OwnerPhone: productEntity.Owner.Phone,
+				},
+			})
 		}
 
 		transaction := entity.Transaction{
@@ -194,27 +223,6 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 		}
 		s.TransactionRepository.Insert(ctx, transaction)
 
-		var detailModels []model.TransactionDetailModel
-		for _, d := range details {
-			product, err := s.productRepo.FindById(ctx, d.ProductId.String())
-			exception.PanicLogging(err)
-
-			detailModels = append(detailModels, model.TransactionDetailModel{
-				Id:            d.Id.String(),
-				SubTotalPrice: d.SubTotalPrice,
-				Price:         d.Price,
-				Quantity:      d.Quantity,
-				Product: model.ProductModel{
-					Id:        product.Id.String(),
-					Name:      product.Name,
-					Price:     product.Price,
-					Quantity:  product.Quantity,
-					ImagePath: product.ImagePath,
-					Owner:     product.Owner.Username, // ✅ include owner here!
-				},
-			})
-		}
-
 		transactionResponses = append(transactionResponses, model.TransactionModel{
 			Id:                 transactionId.String(),
 			TotalPrice:         total,
@@ -223,16 +231,22 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 		})
 	}
 
-	// Add points to user once for all transactions
+	// Add points
 	user, err := s.userRepo.FindByUsername(ctx, username)
 	exception.PanicLogging(err)
 	user.Points += 10
 	err = s.userRepo.Update(ctx, user)
 	exception.PanicLogging(err)
 
-	// Clear all cart items
+	// Clear cart
 	for _, item := range cart.Items {
 		s.cartRepo.DeleteItem(ctx, username, item.ProductID)
+	}
+
+	// Send email
+	err = utils.SendEmail(user.Email, "Transaction Confirmation", emailContent.String())
+	if err != nil {
+		fmt.Println("Failed to send email:", err)
 	}
 
 	return transactionResponses
