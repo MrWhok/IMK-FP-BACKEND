@@ -141,7 +141,7 @@ func (service *productServiceImpl) FindById(ctx context.Context, id string) mode
 		Quantity:    productCache.Quantity,
 		Category:    productCache.Category,
 		Description: productCache.Description,
-		Owner:       productCache.UserID,
+		Owner:       productCache.Owner.Username,
 		ImagePath:   productCache.ImagePath,
 	}
 }
@@ -157,7 +157,7 @@ func (service *productServiceImpl) FindAll(ctx context.Context) (responses []mod
 			Category:    product.Category,
 			Description: product.Description,
 			ImagePath:   product.ImagePath,
-			Owner:       product.UserID,
+			Owner:       product.Owner.Username,
 		})
 	}
 	if len(products) == 0 {
@@ -178,7 +178,7 @@ func (service *productServiceImpl) FindByUsername(ctx context.Context, username 
 			Category:    product.Category,
 			Description: product.Description,
 			ImagePath:   product.ImagePath,
-			Owner:       product.UserID,
+			Owner:       product.Owner.Username,
 		})
 	}
 	if len(products) == 0 {

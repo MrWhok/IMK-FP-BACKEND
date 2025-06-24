@@ -52,8 +52,10 @@ func (transactionService *transactionServiceImpl) Create(ctx context.Context, tr
 	}
 
 	transaction := entity.Transaction{
-		Id:                 uuid.New(),
+		Id:                 uuidGenerate,
 		TotalPrice:         totalPrice,
+		UserID:             transactionModel.UserID, // ✅ Make sure it's passed
+		Status:             "proses",
 		TransactionDetails: transactionDetails,
 	}
 
@@ -130,7 +132,7 @@ func (transactionService *transactionServiceImpl) FindAll(ctx context.Context) (
 	return responses
 }
 
-func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) model.TransactionModel {
+func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) []model.TransactionModel {
 	// Get cart
 	cart, err := s.cartRepo.FindByUsername(ctx, username)
 	exception.PanicLogging(err)
@@ -139,87 +141,101 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 		panic(exception.NotFoundError{Message: "Cart is empty"})
 	}
 
-	transactionId := uuid.New()
-	var total int64
-	var details []entity.TransactionDetail
-
+	// Group items by owner
+	groupedItems := make(map[string][]entity.CartItem)
 	for _, item := range cart.Items {
-		subTotal := int64(item.Quantity) * item.Product.Price
-		productUUID, err := uuid.Parse(item.ProductID)
-		if err != nil {
-			panic("invalid ProductID: " + item.ProductID)
-		}
-
-		productEntity, err := s.productRepo.FindById(ctx, item.ProductID)
+		product, err := s.productRepo.FindById(ctx, item.ProductID)
 		exception.PanicLogging(err)
 
-		if productEntity.Quantity < item.Quantity {
-			panic(exception.BadRequestError{Message: "Insufficient stock for product: " + productEntity.Name})
+		groupedItems[product.Owner.Username] = append(groupedItems[product.Owner.Username], item)
+	}
+
+	var transactionResponses []model.TransactionModel
+
+	for _, items := range groupedItems {
+		transactionId := uuid.New()
+		var total int64
+		var details []entity.TransactionDetail
+
+		for _, item := range items {
+			subTotal := int64(item.Quantity) * item.Product.Price
+			productUUID, err := uuid.Parse(item.ProductID)
+			if err != nil {
+				panic("invalid ProductID: " + item.ProductID)
+			}
+
+			productEntity, err := s.productRepo.FindById(ctx, item.ProductID)
+			exception.PanicLogging(err)
+
+			if productEntity.Quantity < item.Quantity {
+				panic(exception.BadRequestError{Message: "Insufficient stock for product: " + productEntity.Name})
+			}
+
+			productEntity.Quantity -= item.Quantity
+			s.productRepo.Update(ctx, productEntity)
+
+			details = append(details, entity.TransactionDetail{
+				Id:            uuid.New(),
+				TransactionId: transactionId,
+				ProductId:     productUUID,
+				Price:         item.Product.Price,
+				Quantity:      item.Quantity,
+				SubTotalPrice: subTotal,
+			})
+			total += subTotal
 		}
 
-		productEntity.Quantity -= item.Quantity
+		transaction := entity.Transaction{
+			Id:                 transactionId,
+			TotalPrice:         total,
+			UserID:             username,
+			Status:             "proses",
+			TransactionDetails: details,
+		}
+		s.TransactionRepository.Insert(ctx, transaction)
 
-		s.productRepo.Update(ctx, productEntity)
+		var detailModels []model.TransactionDetailModel
+		for _, d := range details {
+			product, err := s.productRepo.FindById(ctx, d.ProductId.String())
+			exception.PanicLogging(err)
 
-		details = append(details, entity.TransactionDetail{
-			Id:            uuid.New(),
-			TransactionId: transactionId,
-			ProductId:     productUUID,
-			Price:         item.Product.Price,
-			Quantity:      item.Quantity,
-			SubTotalPrice: subTotal,
+			detailModels = append(detailModels, model.TransactionDetailModel{
+				Id:            d.Id.String(),
+				SubTotalPrice: d.SubTotalPrice,
+				Price:         d.Price,
+				Quantity:      d.Quantity,
+				Product: model.ProductModel{
+					Id:        product.Id.String(),
+					Name:      product.Name,
+					Price:     product.Price,
+					Quantity:  product.Quantity,
+					ImagePath: product.ImagePath,
+					Owner:     product.Owner.Username, // ✅ include owner here!
+				},
+			})
+		}
+
+		transactionResponses = append(transactionResponses, model.TransactionModel{
+			Id:                 transactionId.String(),
+			TotalPrice:         total,
+			Status:             "proses",
+			TransactionDetails: detailModels,
 		})
-		total += subTotal
 	}
 
-	transaction := entity.Transaction{
-		Id:                 transactionId,
-		TotalPrice:         total,
-		TransactionDetails: details,
-	}
-
-	// Save transaction
-	s.TransactionRepository.Insert(ctx, transaction)
-
+	// Add points to user once for all transactions
 	user, err := s.userRepo.FindByUsername(ctx, username)
 	exception.PanicLogging(err)
-
 	user.Points += 10
-
 	err = s.userRepo.Update(ctx, user)
 	exception.PanicLogging(err)
 
-	// Clear cart
+	// Clear all cart items
 	for _, item := range cart.Items {
 		s.cartRepo.DeleteItem(ctx, username, item.ProductID)
 	}
 
-	// Build response
-	var detailModels []model.TransactionDetailModel
-	for _, d := range details {
-		product, err := s.productRepo.FindById(ctx, d.ProductId.String())
-		exception.PanicLogging(err)
-
-		detailModels = append(detailModels, model.TransactionDetailModel{
-			Id:            d.Id.String(),
-			SubTotalPrice: d.SubTotalPrice,
-			Price:         d.Price,
-			Quantity:      d.Quantity,
-			Product: model.ProductModel{
-				Id:        product.Id.String(),
-				Name:      product.Name,
-				Price:     product.Price,
-				Quantity:  product.Quantity,
-				ImagePath: product.ImagePath,
-			},
-		})
-	}
-
-	return model.TransactionModel{
-		Id:                 transactionId.String(),
-		TotalPrice:         total,
-		TransactionDetails: detailModels,
-	}
+	return transactionResponses
 }
 
 func (transactionService *transactionServiceImpl) FindByUsername(ctx context.Context, username string) []model.TransactionModel {

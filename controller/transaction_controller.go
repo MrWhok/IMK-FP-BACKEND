@@ -46,6 +46,9 @@ func (controller TransactionController) Create(c *fiber.Ctx) error {
 	err := c.BodyParser(&request)
 	exception.PanicLogging(err)
 
+	username := c.Locals("username").(string) // ✅ Get username from JWT
+	request.UserID = username                 // ✅ Ensure correct user is stored
+
 	response := controller.TransactionService.Create(c.Context(), request)
 	return c.Status(fiber.StatusCreated).JSON(model.GeneralResponse{
 		Code:    200,

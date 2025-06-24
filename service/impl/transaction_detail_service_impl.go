@@ -2,6 +2,7 @@ package impl
 
 import (
 	"context"
+
 	"github.com/MrWhok/IMK-FP-BACKEND/exception"
 	"github.com/MrWhok/IMK-FP-BACKEND/model"
 	"github.com/MrWhok/IMK-FP-BACKEND/repository"
@@ -33,6 +34,7 @@ func (transactionDetailService *transactionDetailServiceImpl) FindById(ctx conte
 			Name:     transactionDetail.Product.Name,
 			Price:    transactionDetail.Product.Price,
 			Quantity: transactionDetail.Product.Quantity,
+			Owner:    transactionDetail.Product.Owner.Username, // ✅ Tambahkan ini
 		},
 	}
 }

@@ -31,14 +31,12 @@ func (transactionRepository *transactionRepositoryImpl) Delete(ctx context.Conte
 func (transactionRepository *transactionRepositoryImpl) FindById(ctx context.Context, id string) (entity.Transaction, error) {
 	var transaction entity.Transaction
 	result := transactionRepository.DB.WithContext(ctx).
-		Table("tb_transaction").
-		Select("tb_transaction.transaction_id, tb_transaction.total_price, tb_transaction_detail.transaction_detail_id, tb_transaction_detail.sub_total_price, tb_transaction_detail.price, tb_transaction_detail.quantity, tb_product.product_id, tb_product.name, tb_product.price, tb_product.quantity").
-		Joins("join tb_transaction_detail on tb_transaction_detail.transaction_id = tb_transaction.transaction_id").
-		Joins("join tb_product on tb_product.product_id = tb_transaction_detail.product_id").
 		Preload("TransactionDetails").
 		Preload("TransactionDetails.Product").
-		Where("tb_transaction.transaction_id = ?", id).
+		Preload("TransactionDetails.Product.Owner"). // ✅ Tambahan penting
+		Where("transaction_id = ?", id).
 		First(&transaction)
+
 	if result.RowsAffected == 0 {
 		return entity.Transaction{}, errors.New("transaction Not Found")
 	}
@@ -48,12 +46,9 @@ func (transactionRepository *transactionRepositoryImpl) FindById(ctx context.Con
 func (transactionRepository *transactionRepositoryImpl) FindAll(ctx context.Context) []entity.Transaction {
 	var transactions []entity.Transaction
 	transactionRepository.DB.WithContext(ctx).
-		Table("tb_transaction").
-		Select("tb_transaction.transaction_id, tb_transaction.total_price, tb_transaction_detail.transaction_detail_id, tb_transaction_detail.sub_total_price, tb_transaction_detail.price, tb_transaction_detail.quantity, tb_product.product_id, tb_product.name, tb_product.price, tb_product.quantity").
-		Joins("join tb_transaction_detail on tb_transaction_detail.transaction_id = tb_transaction.transaction_id").
-		Joins("join tb_product on tb_product.product_id = tb_transaction_detail.product_id").
 		Preload("TransactionDetails").
 		Preload("TransactionDetails.Product").
+		Preload("TransactionDetails.Product.Owner"). // ✅ Tambahan penting
 		Find(&transactions)
 	return transactions
 }
@@ -63,9 +58,9 @@ func (transactionRepository *transactionRepositoryImpl) FindByUsername(ctx conte
 	transactionRepository.DB.WithContext(ctx).
 		Table("tb_transaction").
 		Select("DISTINCT tb_transaction.transaction_id, tb_transaction.total_price, tb_transaction.user_id, tb_transaction.status").
-		Joins("join tb_transaction_detail on tb_transaction_detail.transaction_id = tb_transaction.transaction_id").
-		Joins("join tb_product on tb_product.product_id = tb_transaction_detail.product_id").
-		Joins("join tb_user on tb_user.username = tb_product.user_id").
+		Joins("JOIN tb_transaction_detail ON tb_transaction_detail.transaction_id = tb_transaction.transaction_id").
+		Joins("JOIN tb_product ON tb_product.product_id = tb_transaction_detail.product_id").
+		Joins("JOIN tb_user ON tb_user.username = tb_product.user_id").
 		Where("tb_user.username = ?", username).
 		Find(&transactions)
 
@@ -73,6 +68,7 @@ func (transactionRepository *transactionRepositoryImpl) FindByUsername(ctx conte
 		transactionRepository.DB.WithContext(ctx).
 			Preload("TransactionDetails").
 			Preload("TransactionDetails.Product").
+			Preload("TransactionDetails.Product.Owner"). // ✅ Tambahan penting
 			First(&transactions[i], transactions[i].Id)
 	}
 
@@ -82,19 +78,16 @@ func (transactionRepository *transactionRepositoryImpl) FindByUsername(ctx conte
 func (transactionRepository *transactionRepositoryImpl) FindByBuyerUsername(ctx context.Context, username string) []entity.Transaction {
 	var transactions []entity.Transaction
 	transactionRepository.DB.WithContext(ctx).
-		Table("tb_transaction").
-		Select("tb_transaction.transaction_id, tb_transaction.total_price, tb_transaction.user_id, tb_transaction.status").
-		Joins("join tb_user on tb_user.username = tb_transaction.user_id").
-		Where("tb_user.username = ?", username).
 		Preload("TransactionDetails").
 		Preload("TransactionDetails.Product").
+		Preload("TransactionDetails.Product.Owner"). // ✅ Tambahan penting
+		Where("user_id = ?", username).
 		Find(&transactions)
 
 	return transactions
 }
 
 func (transactionRepository *transactionRepositoryImpl) UpdateStatus(ctx context.Context, id string, status string) error {
-	var _ entity.Transaction
 	result := transactionRepository.DB.WithContext(ctx).
 		Model(&entity.Transaction{}).
 		Where("transaction_id = ?", id).

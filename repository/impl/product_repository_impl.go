@@ -39,7 +39,10 @@ func (repository *productRepositoryImpl) Delete(ctx context.Context, product ent
 
 func (repository *productRepositoryImpl) FindById(ctx context.Context, id string) (entity.Product, error) {
 	var product entity.Product
-	result := repository.DB.WithContext(ctx).Unscoped().Where("product_id = ?", id).First(&product)
+	result := repository.DB.WithContext(ctx).Unscoped().
+		Preload("Owner").
+		Where("product_id = ?", id).
+		First(&product)
 	if result.RowsAffected == 0 {
 		return entity.Product{}, errors.New("product Not Found")
 	}

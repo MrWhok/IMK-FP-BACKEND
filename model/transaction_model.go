@@ -11,6 +11,7 @@ type TransactionModel struct {
 
 type TransactionCreateUpdateModel struct {
 	Id                 string                               `json:"id"`
+	UserID             string                               `json:"user_id"`
 	Status             string                               `json:"status"`
 	TotalPrice         int64                                `json:"total_price"`
 	TransactionDetails []TransactionDetailCreateUpdateModel `json:"transaction_details"`
