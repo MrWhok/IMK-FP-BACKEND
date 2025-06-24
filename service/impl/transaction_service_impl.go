@@ -179,6 +179,7 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 	transaction := entity.Transaction{
 		Id:                 transactionId,
 		TotalPrice:         total,
+		UserID:             username,
 		TransactionDetails: details,
 	}
 
