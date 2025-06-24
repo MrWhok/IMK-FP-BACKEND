@@ -150,19 +150,15 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 			panic("invalid ProductID: " + item.ProductID)
 		}
 
-		// 🟨 Fetch product from DB
 		productEntity, err := s.productRepo.FindById(ctx, item.ProductID)
 		exception.PanicLogging(err)
 
-		// 🔴 Check if stock is sufficient
 		if productEntity.Quantity < item.Quantity {
 			panic(exception.BadRequestError{Message: "Insufficient stock for product: " + productEntity.Name})
 		}
 
-		// 🟩 Reduce stock
 		productEntity.Quantity -= item.Quantity
 
-		// 🟦 Update product in DB
 		s.productRepo.Update(ctx, productEntity)
 
 		details = append(details, entity.TransactionDetail{
@@ -185,7 +181,6 @@ func (s *transactionServiceImpl) Checkout(ctx context.Context, username string) 
 	// Save transaction
 	s.TransactionRepository.Insert(ctx, transaction)
 
-	// ✅ Add 10 points to user
 	user, err := s.userRepo.FindByUsername(ctx, username)
 	exception.PanicLogging(err)
 
