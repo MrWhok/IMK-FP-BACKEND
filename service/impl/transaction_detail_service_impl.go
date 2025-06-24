@@ -34,7 +34,7 @@ func (transactionDetailService *transactionDetailServiceImpl) FindById(ctx conte
 			Name:     transactionDetail.Product.Name,
 			Price:    transactionDetail.Product.Price,
 			Quantity: transactionDetail.Product.Quantity,
-			Owner:    transactionDetail.Product.Owner.Username, // ✅ Tambahkan ini
+			Owner:    transactionDetail.Product.UserID, // ✅ Tambahkan ini
 		},
 	}
 }
