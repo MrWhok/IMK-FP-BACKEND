@@ -5,26 +5,30 @@ import (
 )
 
 type ProductModel struct {
-	Id        string `json:"id"`
-	Name      string `json:"name"`
-	Price     int64  `json:"price"`
-	Quantity  int32  `json:"quantity"`
-	Category  string `json:"category"`
-	ImagePath string `json:"image_path"`
+	Id          string `json:"id"`
+	Name        string `json:"name"`
+	Price       int64  `json:"price"`
+	Quantity    int32  `json:"quantity"`
+	Category    string `json:"category"`
+	Description string `json:"description"`
+	ImagePath   string `json:"image_path"`
+	Owner       string `json:"owner"`
 }
 
 type ProductCreateModel struct {
-	Name     string                `form:"name" validate:"required"`
-	Price    int64                 `form:"price" validate:"required"`
-	Quantity int32                 `form:"quantity" validate:"required"`
-	Category string                `form:"category" validate:"required"`
-	Image    *multipart.FileHeader `form:"image" validate:"required"`
+	Name        string                `form:"name" validate:"required"`
+	Price       int64                 `form:"price" validate:"required"`
+	Quantity    int32                 `form:"quantity" validate:"required"`
+	Category    string                `form:"category" validate:"required"`
+	Description string                `form:"description"`
+	Image       *multipart.FileHeader `form:"image" validate:"required"`
 }
 
 type ProductUpdateModel struct {
-	Name     string                `form:"name"`
-	Price    int64                 `form:"price"`
-	Quantity int32                 `form:"quantity"`
-	Category string                `form:"category"`
-	Image    *multipart.FileHeader `form:"image"`
+	Name        string                `form:"name"`
+	Price       int64                 `form:"price"`
+	Quantity    int32                 `form:"quantity"`
+	Category    string                `form:"category"`
+	Description string                `form:"description"`
+	Image       *multipart.FileHeader `form:"image"`
 }

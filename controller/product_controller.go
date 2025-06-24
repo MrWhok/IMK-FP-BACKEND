@@ -48,6 +48,7 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 	priceStr := c.FormValue("price")
 	quantityStr := c.FormValue("quantity")
 	category := c.FormValue("category")
+	description := c.FormValue("description")
 
 	fmt.Println("DEBUG FORM:", name, priceStr, quantityStr, category)
 
@@ -92,11 +93,12 @@ func (controller ProductController) Create(c *fiber.Ctx) error {
 
 	// Create request object
 	request := model.ProductCreateModel{
-		Name:     name,
-		Price:    price,
-		Quantity: int32(quantity),
-		Category: category,
-		Image:    file,
+		Name:        name,
+		Price:       price,
+		Quantity:    int32(quantity),
+		Category:    category,
+		Description: description,
+		Image:       file,
 	}
 
 	// Call service
@@ -128,6 +130,7 @@ func (controller ProductController) Update(c *fiber.Ctx) error {
 	priceStr := c.FormValue("price")
 	quantityStr := c.FormValue("quantity")
 	category := c.FormValue("category")
+	description := c.FormValue("description")
 
 	if name == "" || priceStr == "" || quantityStr == "" || category == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(model.GeneralResponse{
@@ -157,16 +160,17 @@ func (controller ProductController) Update(c *fiber.Ctx) error {
 	}
 
 	request := model.ProductUpdateModel{
-		Name:     name,
-		Price:    price,
-		Quantity: int32(quantity64),
-		Category: category,
+		Name:        name,
+		Price:       price,
+		Quantity:    int32(quantity64),
+		Description: description,
+		Category:    category,
 	}
 
-	file, err := c.FormFile("image")
-	if err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, "Image is required")
-	}
+	file, _ := c.FormFile("image")
+	// if err != nil {
+	// 	return fiber.NewError(fiber.StatusBadRequest, "Image is required")
+	// }
 	request.Image = file
 
 	response := controller.ProductService.Update(c.Context(), request, id)

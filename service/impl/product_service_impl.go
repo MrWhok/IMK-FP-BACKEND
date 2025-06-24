@@ -32,12 +32,13 @@ func (service *productServiceImpl) Create(ctx context.Context, productModel mode
 	username := ctx.Value("username").(string)
 
 	product := entity.Product{
-		Name:      productModel.Name,
-		Price:     productModel.Price,
-		Quantity:  productModel.Quantity,
-		Category:  productModel.Category,
-		ImagePath: imagePath,
-		Owner:     entity.User{Username: username},
+		Name:        productModel.Name,
+		Price:       productModel.Price,
+		Quantity:    productModel.Quantity,
+		Category:    productModel.Category,
+		Description: productModel.Description,
+		ImagePath:   imagePath,
+		Owner:       entity.User{Username: username},
 	}
 	service.ProductRepository.Insert(ctx, product)
 	return productModel
@@ -57,6 +58,7 @@ func (service *productServiceImpl) Update(ctx context.Context, productModel mode
 	existingProduct.Price = productModel.Price
 	existingProduct.Quantity = productModel.Quantity
 	existingProduct.Category = productModel.Category
+	existingProduct.Description = productModel.Description
 
 	// Jika ada image baru
 	if productModel.Image != nil {
@@ -133,12 +135,14 @@ func (service *productServiceImpl) deleteProductImage(imagePath string) {
 func (service *productServiceImpl) FindById(ctx context.Context, id string) model.ProductModel {
 	productCache := configuration.SetCache[entity.Product](service.Cache, ctx, "product", id, service.ProductRepository.FindById)
 	return model.ProductModel{
-		Id:        productCache.Id.String(),
-		Name:      productCache.Name,
-		Price:     productCache.Price,
-		Quantity:  productCache.Quantity,
-		Category:  productCache.Category,
-		ImagePath: productCache.ImagePath,
+		Id:          productCache.Id.String(),
+		Name:        productCache.Name,
+		Price:       productCache.Price,
+		Quantity:    productCache.Quantity,
+		Category:    productCache.Category,
+		Description: productCache.Description,
+		Owner:       productCache.UserID,
+		ImagePath:   productCache.ImagePath,
 	}
 }
 
@@ -146,12 +150,14 @@ func (service *productServiceImpl) FindAll(ctx context.Context) (responses []mod
 	products := service.ProductRepository.FindAl(ctx)
 	for _, product := range products {
 		responses = append(responses, model.ProductModel{
-			Id:        product.Id.String(),
-			Name:      product.Name,
-			Price:     product.Price,
-			Quantity:  product.Quantity,
-			Category:  product.Category,
-			ImagePath: product.ImagePath,
+			Id:          product.Id.String(),
+			Name:        product.Name,
+			Price:       product.Price,
+			Quantity:    product.Quantity,
+			Category:    product.Category,
+			Description: product.Description,
+			ImagePath:   product.ImagePath,
+			Owner:       product.UserID,
 		})
 	}
 	if len(products) == 0 {
@@ -165,12 +171,14 @@ func (service *productServiceImpl) FindByUsername(ctx context.Context, username 
 
 	for _, product := range products {
 		responses = append(responses, model.ProductModel{
-			Id:        product.Id.String(),
-			Name:      product.Name,
-			Price:     product.Price,
-			Quantity:  product.Quantity,
-			Category:  product.Category,
-			ImagePath: product.ImagePath,
+			Id:          product.Id.String(),
+			Name:        product.Name,
+			Price:       product.Price,
+			Quantity:    product.Quantity,
+			Category:    product.Category,
+			Description: product.Description,
+			ImagePath:   product.ImagePath,
+			Owner:       product.UserID,
 		})
 	}
 	if len(products) == 0 {
