@@ -55,6 +55,8 @@ func (controller UserController) Authentication(c *fiber.Ctx) error {
 	cookie.Value = tokenJwtResult
 	cookie.Expires = expirationTime
 	cookie.HTTPOnly = true
+	cookie.Secure = true
+	cookie.SameSite = "None"
 	cookie.Path = "/"
 
 	c.Cookie(cookie)
