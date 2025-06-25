@@ -94,7 +94,7 @@ func main() {
 	app := fiber.New(configuration.NewFiberConfiguration())
 	app.Use(recover.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins:     "*",
+		AllowOrigins:     "https://hamasfa.fun",
 		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
 		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
 		AllowCredentials: true,
